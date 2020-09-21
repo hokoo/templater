@@ -3,7 +3,7 @@ An another templater for php.
 
 ## A Simple use
 
-```
+```html
 <div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         <div class="grid">
@@ -22,7 +22,7 @@ An another templater for php.
 </div>
 ```
 
-```
+```php
 use iTRON;
 return Templater->render( $template, [
     'foo', 
@@ -36,7 +36,7 @@ return Templater->render( $template, [
 
 Repeater's tags
 
-```
+```html
 <div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         %3$s [[repeater_tag_name]]
@@ -57,7 +57,7 @@ Repeater's tags
 </div>
 ```
 
-```
+```php
 use iTRON;
 return Templater->render( $template, [
     'foo',
@@ -71,7 +71,7 @@ return Templater->render( $template, [
 
 ### Nested repeater's tags
 
-```
+```html
 <div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         %3$s [[repeater_tag_name]]
@@ -96,7 +96,7 @@ return Templater->render( $template, [
 </div>
 ```
 
-```
+```php
 use iTRON;
 
 $anything = [ 
@@ -118,7 +118,7 @@ return Templater->render( $template, [
 ```
 
 In fact, does not matter what order you describe the tags. The next template is identical for previous.
-```
+```html
 <div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         %3$s
