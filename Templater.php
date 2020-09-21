@@ -1,15 +1,14 @@
 <?php
 /**
- * Шаблонизатор
+ * iTRON Templater
  */
 namespace iTRON;
 class Templater{
 
 	private static $regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
-
-
+	
 	/**
-	 * Функция загрузки HTML-шаблона с именованными повторителями.
+	 * Загрузка HTML-шаблона с именованными повторителями.
 	 * Формат повторителя
 	 *
 	 * [[ИМЯ_ПОВТ]]контент повторителя с аргументами %s замены[[/ИМЯ_ПОВТ]]
@@ -26,7 +25,7 @@ class Templater{
 	 *
 	 * @return string
 	 */
-	public static function templater( $subject, $args = [], $invert = false ){
+	public static function render( $subject, $args = [], $invert = false ){
 		if ( empty( $args ) ) return $subject;
 		$m = [];
 		preg_match_all( self::$regex, $subject, $m );
