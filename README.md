@@ -1,15 +1,15 @@
-# iTron Templater
+# iTRON Templater
 An another templater for php.
 
 ## A Simple use
 
 ```
-<div class="popup $1$s" data-popup="$2$s">
+<div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         <div class="grid">
             <div class="col col_7 col_sm-6">
                 <div class="popup__header">
-                    <div class="popup__title">$3$s</div>
+                    <div class="popup__title">%3$s</div>
                 </div>
             </div>
             <div class="col col_12 col_sm-6">
@@ -37,13 +37,13 @@ return Templater->render( $template, [
 Repeater's tags
 
 ```
-<div class="popup $1$s" data-popup="$2$s">
+<div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         %3$s [[repeater_tag_name]]
         <div class="grid">
             <div class="col col_7 col_sm-6">
                 <div class="popup__header">
-                    <div class="popup__title">$1$s</div>
+                    <div class="popup__title">%1$s</div>
                 </div>
             </div>
             <div class="col col_12 col_sm-6">
@@ -72,13 +72,13 @@ return Templater->render( $template, [
 ### Nested repeater's tags
 
 ```
-<div class="popup $1$s" data-popup="$2$s">
+<div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         %3$s [[repeater_tag_name]]
         <div class="grid">
             <div class="col col_7 col_sm-6">
                 <div class="popup__header">
-                    <div class="popup__title">$1$s</div>
+                    <div class="popup__title">%1$s</div>
                 </div>
             </div>
             <div class="col col_12 col_sm-6">
@@ -119,7 +119,7 @@ return Templater->render( $template, [
 
 In fact, does not matter what order you describe the tags. The next template is identical for previous.
 ```
-<div class="popup $1$s" data-popup="$2$s">
+<div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
         %3$s
     </div>
@@ -129,7 +129,7 @@ In fact, does not matter what order you describe the tags. The next template is 
     <div class="grid">
         <div class="col col_7 col_sm-6">
             <div class="popup__header">
-                <div class="popup__title">$1$s</div>
+                <div class="popup__title">%1$s</div>
             </div>
         </div>
         <div class="col col_12 col_sm-6">
