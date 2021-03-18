@@ -27,8 +27,7 @@ class Templater{
 	 */
 	public static function render( $subject, $args = [], $invert = false ){
 		if ( empty( $args ) ) return $subject;
-		$m = [];
-		preg_match_all( self::$regex, $subject, $m );
+
 		$result = self::_parse_rpt( $subject );
 		if ( empty( $result ) )
 			return $invert ? $subject : vsprintf( $subject, $args );
