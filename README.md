@@ -1,6 +1,16 @@
 # iTRON Templater
-An another templater for php.
+Templater for WordPress.
 
+```php
+use iTRON\Templater;
+$t = new Templater();
+
+/**
+ * HTML Template
+ * @var string 
+ */
+$template;
+```
 ## A Simple use
 
 ```html
@@ -23,8 +33,8 @@ An another templater for php.
 ```
 
 ```php
-use iTRON;
-return Templater->render( $template, [
+
+return $t->render( $template, [
     'foo', 
     'bar',
     'Where is the title?',
@@ -58,8 +68,7 @@ Repeater's tags
 ```
 
 ```php
-use iTRON;
-return Templater->render( $template, [
+return $t->render( $template, [
     'foo',
     'bar',
     [
@@ -97,8 +106,6 @@ return Templater->render( $template, [
 ```
 
 ```php
-use iTRON;
-
 $anything = [ 
     [ 'tag' => 'form', 'data' => [ 'form_1', $someform1 ] ], 
     [ 'tag' => 'form', 'data' => [ 'form_2', $someform2 ] ], 
@@ -107,7 +114,8 @@ $anythingelse = [
     [ 'tag' => 'form', 'data' => [ 'form_3', $someform3 ] ], 
     [ 'tag' => 'form', 'data' => [ 'form_4', $someform4 ] ], 
 ];
-return Templater->render( $template, [
+
+return $t->render( $template, [
     'foo',
     'bar',
     [
