@@ -5,8 +5,22 @@
 namespace iTRON;
 class Templater{
 
-	private static $regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
-	
+	private static $_regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
+	private
+		/**
+		 * @var string
+		 */
+		$regex;
+
+	function __construct(){
+		$this->set_regex( self::$_regex );
+	}
+
+	public function set_regex( $regex ){
+		$this->regex = $regex;
+		return $this;
+	}
+
 	/**
 	 * Загрузка HTML-шаблона с именованными повторителями.
 	 * Формат повторителя
@@ -25,10 +39,10 @@ class Templater{
 	 *
 	 * @return string
 	 */
-	public static function render( $subject, $args = [], $invert = false ){
+	public function render( $subject, $args = [], $invert = false ){
 		if ( empty( $args ) ) return $subject;
 
-		$result = self::_parse_rpt( $subject );
+		$result = $this->_parse_rpt( $subject );
 		if ( empty( $result ) )
 			return $invert ? $subject : vsprintf( $subject, $args );
 
@@ -55,9 +69,9 @@ class Templater{
 	 * content	- список содержимого повторителей, включая вложенные
 	 * clear	- список содержимого повторителей, исключая вложенные
 	 */
-	private static function _parse_rpt( $subject ){
+	private function _parse_rpt( $subject ){
 		$m = [];
-		preg_match_all( self::$regex, $subject, $m );
+		preg_match_all( $this->regex, $subject, $m );
 		if ( empty( $m[0] ) ) return false;
 
 		$result = [
@@ -66,7 +80,7 @@ class Templater{
 			'clear'		=> [],
 		];
 		foreach( $m['content'] as $found ):
-			$inner = self::_parse_rpt( $found );
+			$inner = $this->_parse_rpt( $found );
 			if ( is_array( $inner ) ) :
 				$result['tag'] = array_merge( $result['tag'], $inner['result']['tag'] );
 				$result['content'] = array_merge( $result['content'], $inner['result']['content'] );
