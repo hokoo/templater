@@ -11,7 +11,7 @@ $t = new Templater();
  */
 $template;
 ```
-## A Simple use
+## Simple using
 
 ```html
 <div class="popup %1$s" data-popup="%2$s">
@@ -42,7 +42,7 @@ return $t->render( $template, [
 ] );
 ```
 
-## An Advanced use
+## Advanced using
 
 Repeater's tags
 
@@ -106,11 +106,11 @@ return $t->render( $template, [
 ```
 
 ```php
-$anything = [ 
+$repeated_forms_a = [ 
     [ 'tag' => 'form', 'data' => [ 'form_1', $someform1 ] ], 
     [ 'tag' => 'form', 'data' => [ 'form_2', $someform2 ] ], 
 ];
-$anythingelse = [ 
+$repeated_forms_b = [ 
     [ 'tag' => 'form', 'data' => [ 'form_3', $someform3 ] ], 
     [ 'tag' => 'form', 'data' => [ 'form_4', $someform4 ] ], 
 ];
@@ -119,13 +119,13 @@ return $t->render( $template, [
     'foo',
     'bar',
     [
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'Is this a title?', $anything ] ],
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'There is no title', $anythingelse ] ],
+        [ 'tag' => 'repeater_tag_name', 'data' => [ 'Is this a title?',  $repeated_forms_a ] ],
+        [ 'tag' => 'repeater_tag_name', 'data' => [ 'There is no title', $repeated_forms_b ] ],
     ]
 ] );
 ```
 
-In fact, does not matter what order you describe the tags. The next template is identical for previous.
+In fact, it does not matter what order you describe the tags. The next template is identical for the previous one functionally.
 ```html
 <div class="popup %1$s" data-popup="%2$s">
     <div class="popup__container">
