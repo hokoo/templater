@@ -1,5 +1,7 @@
 # iTRON Templater
-Templater for WordPress.
+HTML Templater for PHP.
+
+Stop using the Twig. It's too painful and meaningless. We do not need to reinvent the wheel and get a new dialect above PHP. We need to make it better.
 
 ```php
 use iTRON\Templater\Templater;
@@ -38,8 +40,28 @@ return $t->render( $template, [
     'foo', 
     'bar',
     'Where is the title?',
-    $anything
+    'anything'
 ] );
+```
+
+The result will be:
+```html
+<div class="popup foo" data-popup="bar">
+    <div class="popup__container">
+        <div class="grid">
+            <div class="col col_7 col_sm-6">
+                <div class="popup__header">
+                    <div class="popup__title">Where is the title?</div>
+                </div>
+            </div>
+            <div class="col col_12 col_sm-6">
+                <div class="popup__form">
+                    anything
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 ```
 
 ## Advanced using
@@ -72,10 +94,42 @@ return $t->render( $template, [
     'foo',
     'bar',
     [
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'Is this a title?', $anything ] ],
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'There is no title', $anythingelse ] ],
+        [ 'tag' => 'repeater_tag_name', 'data' => [ 'Is this a title?', 'anything' ] ],
+        [ 'tag' => 'repeater_tag_name', 'data' => [ 'There is no title', 'anythingelse' ] ],
     ]
 ] );
+```
+
+The result will be:
+```html
+<div class="popup foo" data-popup="bar">
+    <div class="popup__container">
+        <div class="grid">
+            <div class="col col_7 col_sm-6">
+                <div class="popup__header">
+                    <div class="popup__title">Is this a title?</div>
+                </div>
+            </div>
+            <div class="col col_12 col_sm-6">
+                <div class="popup__form">
+                    anything
+                </div>
+            </div>
+        </div>
+        <div class="grid">
+            <div class="col col_7 col_sm-6">
+                <div class="popup__header">
+                    <div class="popup__title">There is no title</div>
+                </div>
+            </div>
+            <div class="col col_12 col_sm-6">
+                <div class="popup__form">
+                    anythingelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 ```
 
 ### Nested repeater's tags
