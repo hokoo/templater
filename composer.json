@@ -1,0 +1,17 @@
+{
+  "name": "hokoo/templater",
+  "description": "Keep your templates in one place apart from your php code.",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Igor Tron",
+      "email": "root@itron.pro"
+    }
+  ],
+  "autoload": {
+    "files": [
+        "Templater.php"
+    ]
+  }
+}
