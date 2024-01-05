@@ -2,40 +2,43 @@
 /**
  * iTRON Templater
  */
-namespace iTRON;
+namespace iTRON\Templater;
+
 class Templater{
 
 	private static $_regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
-	private
-		/**
-		 * @var string
-		 */
-		$regex;
+	private string $regex;
 
 	function __construct(){
 		$this->set_regex( self::$_regex );
 	}
 
-	public function set_regex( $regex ){
+	public function set_regex( $regex ): Templater {
 		$this->regex = $regex;
 		return $this;
 	}
 
 	/**
-	 * Загрузка HTML-шаблона с именованными повторителями.
-	 * Формат повторителя
+	 * Loading an HTML template with named repeaters.
+	 * Repeaters format:
 	 *
-	 * [[ИМЯ_ПОВТ]]контент повторителя с аргументами %s замены[[/ИМЯ_ПОВТ]]
+	 * [[REPEATER_NAME]]repeater content with %s substitution arguments[[/REPEATER_NAME]]
 	 *
-	 * Аргуметы функции:
-	 * @param string $subject	: шаблон
-	 * @param array $args		: многомерный индексированный массив данных для автозамены, где каждый элемент ($n => $data) соответствует порядку аргументов автозамены из исходного шаблона ( %[$n+1]$s => $data ).
-	 * При этом элементы сами являются многомерными массивами, где
-	 * столбцы -
-	 * `tag` 		=> имена повторителей
-	 * `content`	=> индексированный одномерный массив данных для автозамены функцией vsprintf внутри повторителя
-	 * строки - порядок вывода повторителей
-	 * @param boolean $invert 	: вернуть обработку только указанного в первом элементе $args повторителя, игнорируя все прочие повтрители и аргументы автозамены.
+	 * Function arguments:
+	 * @param string $subject       template
+	 * @param array $args           multidimensional indexed array of data for automatic replacement,
+	 *                              where each element ($n => $data) corresponds to the order of substitution arguments
+	 *                              from the original template (%[$n+1]$s => $data).
+	 *
+	 *                              The elements themselves are multidimensional arrays where
+	 *                                  columns -
+	 *                                      `tag`       =>  placeholder names
+	 *                                      `content`   =>  indexed one-dimensional array of data for automatic
+	 *                                                      replacement using the vsprintf()
+	 *                                                      function inside the placeholder.
+	 *                                  rows - the order of repeaters output.
+	 * @param boolean $invert       return processing only for the repeater specified in the first element of $args,
+	 *                              ignoring all other repeaters and substitution arguments.
 	 *
 	 * @return string
 	 */
@@ -64,10 +67,10 @@ class Templater{
 	}
 
 	/**
-	 * Рекурсивная функция поиска вложенных повторителей
-	 * tag	    - список имён найденных повторителей
-	 * content	- список содержимого повторителей, включая вложенные
-	 * clear	- список содержимого повторителей, исключая вложенные
+	 * Recursive function for finding nested repeaters.
+	 * tag	    - names of found repeaters
+	 * content	- list of repeater content, including nested ones
+	 * clear	- list of repeater content without nested ones
 	 */
 	private function _parse_rpt( $subject ){
 		$m = [];
@@ -95,7 +98,7 @@ class Templater{
 
 	private static function _get_rpt_data( $data, $context ){
 		if ( is_array( $data ) ) :
-			$subline = '';
+			$substr = '';
 
 			foreach( $data as $row ) :
 				$content = $row['content'] ?? @$row['data'];
@@ -105,16 +108,17 @@ class Templater{
 							if ( is_array( $maybe_subarray ) )
 								$content[ $i ] = self::_get_rpt_data( $maybe_subarray, $context );
 						endforeach;
-					$subline .=	( false !== $key = array_search ( $row['tag'], $context['result']['tag'] ) ) ?
-						vsprintf( $context['result']['clear'][ $key ], $content ) : ( is_array( $content ) ? implode( '', $content ) : $content );
+					$substr .= ( false !== $key = array_search ( $row['tag'], $context['result']['tag'] ) ) ?
+						vsprintf( $context['result']['clear'][ $key ], $content ) :
+						( is_array( $content ) ? implode( '', $content ) : $content );
 				elseif ( ! empty( $content ) ) :
-					$subline .= ( is_array( $content ) ? implode( '', $content ) : $content );
+					$substr .= ( is_array( $content ) ? implode( '', $content ) : $content );
 				elseif ( ! empty( $row['tag'] ) ) :
-					$subline .= ( false !== $key = array_search ( $row['tag'], $context['result']['tag'] ) ) ?
+					$substr .= ( false !== $key = array_search ( $row['tag'], $context['result']['tag'] ) ) ?
 						$context['result']['clear'][ $key ] : '';
 				endif;
 			endforeach;
-			$out = $subline;
+			$out = $substr;
 		else :
 			$out = $data;
 		endif;

@@ -2,7 +2,7 @@
 Templater for WordPress.
 
 ```php
-use iTRON\Templater;
+use iTRON\Templater\Templater;
 $t = new Templater();
 
 /**
