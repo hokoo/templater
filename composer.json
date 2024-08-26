@@ -10,8 +10,11 @@
     }
   ],
   "autoload": {
-    "files": [
-        "Templater.php"
-    ]
+    "psr-4": {
+      "iTRON\\Templater\\": "src/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
   }
 }
