@@ -1,4 +1,6 @@
 # iTRON Templater
+[![PHPUnit Tests](https://github.com/hokoo/templater/actions/workflows/phpunit.yml/badge.svg)](https://github.com/hokoo/templater/actions/workflows/phpunit.yml)
+
 HTML Templater for PHP.
 
 Stop using the Twig. It's too painful and meaningless. We do not need to reinvent the wheel and get a new dialect above PHP. We need to make it better.
