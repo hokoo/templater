@@ -139,5 +139,40 @@ EXPECTED;
 EXPECTED;
 
 		$this->assertEquals( $expected, $result );
+
+		/**
+		 * Template with nested repeaters.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="classname">
+	%s[[tag1]]<div class="tag1">
+		%s[[tag2]]<div class="tag2">%s</div>[[/tag2]]
+	</div>[[/tag1]]
+</div>
+TEMPLATE;
+
+		$result = $templater->render( $tpl, [
+			[
+				[
+					'tag'     => 'tag1',
+					'content' => [
+						[
+							[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
+						],
+					]
+				],
+			],
+		] );
+
+		$expected = <<<EXPECTED
+<div class="classname">
+	<div class="tag1">
+		<div class="tag2">CONTENT2</div>
+	</div>
+</div>
+EXPECTED;
+
+
+		$this->assertEquals( $expected, $result );
 	}
 }
