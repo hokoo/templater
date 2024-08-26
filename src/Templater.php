@@ -77,6 +77,10 @@ class Templater{
 	}
 
 	private function format( $data, $args ): string {
+		if ( ! is_array( $args ) ) {
+			$args = [ $args ];
+		}
+
 		return $this->format_preselected_values( vsprintf( $data, $args ) );
 	}
 
