@@ -95,7 +95,7 @@ class Templater{
 			$calculated = $values[ (int) $m['index'][$i] ] ?? $values[0];
 
 			// Replace the preselected value with the calculated one. Replace the first occurrence only.
-			$result = preg_replace( preg_quote( $found, '/' ), $calculated, $result, 1 );
+			$result = preg_replace( '/' . preg_quote( $found, '/' ) . '/', $calculated, $result, 1 );
 		}
 
 		return $result;
