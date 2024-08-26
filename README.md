@@ -210,3 +210,26 @@ In fact, it does not matter what order you describe the tags. The next template 
     </form>
 [[/form]]
 ```
+
+### Modifier with predefined values
+
+Predefined modifier can only accept an integer value as index (starting from 0) of one of the predefined values. Any invalid value will be considered as 0. 
+
+```php
+$tpl = <<<TEMPLATE
+<div class="classname">
+	[[value1|value2|value3/]]%d
+</div>
+TEMPLATE;
+
+$result = $templater->render( $tpl, [
+    1,
+] );
+```
+
+The result will be:
+```html
+<div class="classname">
+	value2
+</div>
+```

@@ -81,5 +81,63 @@ TEMPLATE;
 EXPECTED;
 
 		$this->assertEquals( $expected, $result );
+
+		/**
+		 * Template with a preselected value.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="classname">
+	%s[[tag1]]<div class="tag1">%s</div>[[/tag1]]
+	%s[[tag2]]<div class="tag2">%s</div>[[/tag2]]
+	[[value1|value2|value3/]]%d
+</div>
+TEMPLATE;
+
+		$result = $templater->render( $tpl, [
+			[
+				[ 'tag' => 'tag1', 'content' => 'CONTENT1' ],
+				[ 'tag' => 'tag1', 'content' => 'CONTENT1.2' ],
+				[ 'tag' => 'tag1', 'content' => 'CONTENT1.3' ],
+			],
+			[
+				[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
+			],
+			1,
+		] );
+
+		$expected = <<<EXPECTED
+<div class="classname">
+	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag2">CONTENT2</div>
+	value2
+</div>
+EXPECTED;
+
+		$this->assertEquals( $expected, $result );
+
+		/**
+		 * The same test with a wrong index.
+		 */
+		$result = $templater->render( $tpl, [
+			[
+				[ 'tag' => 'tag1', 'content' => 'CONTENT1' ],
+				[ 'tag' => 'tag1', 'content' => 'CONTENT1.2' ],
+				[ 'tag' => 'tag1', 'content' => 'CONTENT1.3' ],
+			],
+			[
+				[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
+			],
+			10,
+		] );
+
+		$expected = <<<EXPECTED
+<div class="classname">
+	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag2">CONTENT2</div>
+	value1
+</div>
+EXPECTED;
+
+		$this->assertEquals( $expected, $result );
 	}
 }
