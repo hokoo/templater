@@ -2,14 +2,26 @@ version: '3.8'
 
 services:
   php:
-    build:
-      context: .
-      args:
-        - PHP_VERSION=${PHP_VERSION}
-    container_name: php
+    image: wodby/php:${PHP_VERSION}
+    working_dir: /srv/web
+    container_name: templater-php
     volumes:
       - .:/srv/web
+      - ./dev/php.ini:/usr/local/etc/php/conf.d/z-php-sp-overrides.ini
     environment:
-      - XDEBUG_MODE=off
+      XDEBUG_CONFIG: client_host=host.docker.internal
+      XDEBUG_MODE: $XDEBUG_MODE
+      PHP_XDEBUG: 1
+      PHP_XDEBUG_DEFAULT_ENABLE: 1
+      PHP_IDE_CONFIG: $XDEBUG_IDE_CONFIG
+      PHP_XDEBUG_CLIENT_PORT: $XDEBUG_PORT
+      PHP_XDEBUG_IDEKEY: $XDEBUG_IDE_KEY
+      PHP_EXTENSIONS_DISABLE: $EXTENSIONS_DISABLE
     ports:
       - "9000:9000"
+    networks:
+        - itron-network
+
+networks:
+  itron-network:
+    driver: bridge
