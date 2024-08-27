@@ -486,4 +486,65 @@ TEMPLATE;
 			remove_spaces_recursively( $result['result'] )
 		);
 	}
+
+	public function testDeepNested_repeaters_parser() {
+		$templater = new Templater();
+		$method    = new ReflectionMethod( Templater::class, 'get_repeaters' );
+		$method->setAccessible( true );
+
+		/**
+		 * The same, but with a deeper nesting.
+		 */
+		$tpl      = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]
+		%s
+  
+	[[logo]]
+	<div class="logo">
+		%s
+		[[img]]<img src="%s" alt=""/>[[/img]]
+		[[caption]]<span class="caption">%s</span>[[/caption]]
+	</div>
+	[[/logo]]
+	[[text]]<div class="text">%s</div>[[/text]]
+  [[/list-item]]
+</div>
+TEMPLATE;
+		$expected = [
+			'result' => [
+				'clear' => [
+					'list-item' => '%s',
+					'logo'      => '<div class="logo">%s</div>',
+					'img'       => '<img src="%s" alt=""/>',
+					'caption'   => '<span class="caption">%s</span>',
+					'text'      => '<div class="text">%s</div>',
+				],
+
+				'content' => [
+					'%s[[logo]]<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]][[caption]]<span class="caption">%s</span>[[/caption]]</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]',
+					'<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]][[caption]]<span class="caption">%s</span>[[/caption]]</div>',
+					'<div class="text">%s</div>',
+					'<img src="%s" alt=""/>',
+					'<span class="caption">%s</span>',
+				],
+
+				'tag' => [
+					'list-item',
+					'logo',
+					'text',
+					'img',
+					'caption',
+				],
+			],
+		];
+
+		$result = $method->invoke( $templater, $tpl );
+		// This fails.
+		$this->assertEquals(
+			remove_spaces_recursively( $expected['result'] ),
+			remove_spaces_recursively( $result['result'] )
+		);
+
+	}
 }

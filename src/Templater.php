@@ -137,16 +137,18 @@ class Templater {
 			'clear'   => [],
 		];
 
-		foreach ( $m['content'] as $found ):
+		foreach ( $m['content'] as $index => $found ):
 			$inner = $this->get_repeaters( $found );
 			if ( is_array( $inner ) ) :
 				$result['tag']     = array_merge( $result['tag'], $inner['result']['tag'] );
 				$result['content'] = array_merge( $result['content'], $inner['result']['content'] );
-				$result['clear']   = array_merge( $result['clear'],
-					[ str_replace( $inner['data'][0], '', $found ) ],
-					$inner['result']['clear'] );
+				$result['clear']   = array_merge(
+					$result['clear'],
+					[ $m['tag'][$index] => str_replace( $inner['data'][0], '', $found ) ],
+					$inner['result']['clear'],
+				);
 			else :
-				$result['clear'] [] = $found;
+				$result['clear'][ $m['tag'][$index] ] = $found;
 			endif;
 		endforeach;
 
@@ -167,14 +169,15 @@ class Templater {
 							}
 						endforeach;
 					}
-					$substr .= ( false !== $key = array_search( $row['tag'], $context['result']['tag'] ) ) ?
-						$this->format( $context['result']['clear'][ $key ], $content ) :
-						( is_array( $content ) ? implode( '', $content ) : $content );
+
+					$substr .= $this->format(
+						$context['result']['clear'][ $context['result']['tag'][ array_search( $row['tag'], $context['result']['tag'] ) ] ],
+						$content
+					);
 				elseif ( ! empty( $content ) ) :
 					$substr .= ( is_array( $content ) ? implode( '', $content ) : $content );
 				elseif ( ! empty( $row['tag'] ) ) :
-					$substr .= ( false !== $key = array_search( $row['tag'], $context['result']['tag'] ) ) ?
-						$context['result']['clear'][ $key ] : '';
+					$substr .= $context['result']['clear'][ $context['result']['tag'][ array_search( $row['tag'], $context['result']['tag'] ) ] ];
 				endif;
 			endforeach;
 			$out = $substr;
