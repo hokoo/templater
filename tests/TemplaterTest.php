@@ -385,5 +385,105 @@ TEMPLATE;
 		];
 
 		$this->assertEquals( $expected['result'], $result['result'] );
+
+		/**
+		 * Deep nested.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]
+		%s
+  
+	[[logo]]
+	<div class="logo">
+		%s
+	</div>
+	[[/logo]]
+	[[text]]<div class="text">%s</div>[[/text]]
+	[[img]]<img src="%s" alt=""/>[[/img]]
+  [[/list-item]]
+</div>
+TEMPLATE;
+
+		$result   = $method->invoke( $templater, $tpl );
+		$expected = [
+			'result' => [
+				'clear' => [
+					'%s',
+					'<div class="logo">%s</div>',
+					'<div class="text">%s</div>',
+					'<img src="%s" alt=""/>',
+				],
+
+				'content' => [
+					'%s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]][[img]]<img src="%s" alt=""/>[[/img]]',
+					'<div class="logo">%s</div>',
+					'<div class="text">%s</div>',
+					'<img src="%s" alt=""/>',
+				],
+
+				'tag' => [
+					'list-item',
+					'logo',
+					'text',
+					'img',
+				],
+			],
+		];
+
+		$this->assertEquals(
+			remove_spaces_recursively( $expected['result'] ),
+			remove_spaces_recursively( $result['result'] )
+		);
+
+		/**
+		 * The same, but with a deeper nesting.
+		 */
+		$tpl      = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]
+		%s
+  
+	[[logo]]
+	<div class="logo">
+		%s
+		[[img]]<img src="%s" alt=""/>[[/img]]
+	</div>
+	[[/logo]]
+	[[text]]<div class="text">%s</div>[[/text]]
+  [[/list-item]]
+</div>
+TEMPLATE;
+		$expected = [
+			'result' => [
+				'clear' => [
+					'%s',
+					'<div class="logo">%s</div>',
+					'<div class="text">%s</div>',
+					'<img src="%s" alt=""/>',
+				],
+
+				'content' => [
+					'%s[[logo]]<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]]</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]',
+					'<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]]</div>',
+					'<div class="text">%s</div>',
+					'<img src="%s" alt=""/>',
+				],
+
+				'tag' => [
+					'list-item',
+					'logo',
+					'text',
+					'img',
+				],
+			],
+		];
+
+		$result = $method->invoke( $templater, $tpl );
+		// This fails.
+		$this->assertEquals(
+			remove_spaces_recursively( $expected['result'] ),
+			remove_spaces_recursively( $result['result'] )
+		);
 	}
 }
