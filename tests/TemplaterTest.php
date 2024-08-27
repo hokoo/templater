@@ -365,13 +365,13 @@ TEMPLATE;
 		$expected = [
 			'result' => [
 				'clear' => [
-					PHP_EOL . '    %s' . PHP_EOL . '  ',
-					'<div class="logo">%s</div>',
-					'<div class="text">%s</div>'
+					'list-item' => '%s',
+					'logo'      => '<div class="logo">%s</div>',
+					'text'      => '<div class="text">%s</div>'
 				],
 
 				'content' => [
-					PHP_EOL . '    %s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]' . PHP_EOL . '  ',
+					'%s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]',
 					'<div class="logo">%s</div>',
 					'<div class="text">%s</div>'
 				],
@@ -384,7 +384,10 @@ TEMPLATE;
 			],
 		];
 
-		$this->assertEquals( $expected['result'], $result['result'] );
+		$this->assertEquals(
+			remove_spaces_recursively( $expected['result'] ),
+			remove_spaces_recursively( $result['result'] )
+		);
 
 		/**
 		 * Deep nested.
@@ -409,10 +412,10 @@ TEMPLATE;
 		$expected = [
 			'result' => [
 				'clear' => [
-					'%s',
-					'<div class="logo">%s</div>',
-					'<div class="text">%s</div>',
-					'<img src="%s" alt=""/>',
+					'list-item' => '%s',
+					'logo'      => '<div class="logo">%s</div>',
+					'text'      => '<div class="text">%s</div>',
+					'img'       => '<img src="%s" alt=""/>',
 				],
 
 				'content' => [
@@ -457,10 +460,10 @@ TEMPLATE;
 		$expected = [
 			'result' => [
 				'clear' => [
-					'%s',
-					'<div class="logo">%s</div>',
-					'<div class="text">%s</div>',
-					'<img src="%s" alt=""/>',
+					'list-item' => '%s',
+					'logo'      => '<div class="logo">%s</div>',
+					'text'      => '<div class="text">%s</div>',
+					'img'       => '<img src="%s" alt=""/>',
 				],
 
 				'content' => [
@@ -545,6 +548,5 @@ TEMPLATE;
 			remove_spaces_recursively( $expected['result'] ),
 			remove_spaces_recursively( $result['result'] )
 		);
-
 	}
 }
