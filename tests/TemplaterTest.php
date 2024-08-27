@@ -3,6 +3,8 @@
 use iTRON\Templater\Templater;
 use PHPUnit\Framework\TestCase;
 
+require_once 'inc/functions.php';
+
 class TemplaterTest extends TestCase {
 
 	public function testRender() {
@@ -75,12 +77,14 @@ TEMPLATE;
 
 		$expected = <<<EXPECTED
 <div class="classname">
-	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag1">CONTENT1</div>
+	<div class="tag1">CONTENT1.2</div>
+	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
 </div>
 EXPECTED;
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
 
 		/**
 		 * Template with a preselected value.
@@ -107,13 +111,15 @@ TEMPLATE;
 
 		$expected = <<<EXPECTED
 <div class="classname">
-	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag1">CONTENT1</div>
+	<div class="tag1">CONTENT1.2</div>
+	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
 	value2
 </div>
 EXPECTED;
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
 
 		/**
 		 * The same test with a wrong index.
@@ -132,22 +138,27 @@ EXPECTED;
 
 		$expected = <<<EXPECTED
 <div class="classname">
-	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag1">CONTENT1</div>
+	<div class="tag1">CONTENT1.2</div>
+	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
 	value1
 </div>
 EXPECTED;
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
 
 		/**
 		 * Template with nested repeaters.
 		 */
 		$tpl = <<<TEMPLATE
 <div class="classname">
-	%s[[tag1]]<div class="tag1">
-		%s[[tag2]]<div class="tag2">%s</div>[[/tag2]]
-	</div>[[/tag1]]
+	%s
+	[[tag1]]
+	<div class="tag1">
+		%s [[tag2]]<div class="tag2">%s</div>[[/tag2]]
+	</div>
+	[[/tag1]]
 </div>
 TEMPLATE;
 
@@ -173,6 +184,167 @@ TEMPLATE;
 EXPECTED;
 
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
+
+		/**
+		 * Template with several tags and repeater.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]<div class="sub-list">%s</div>[[/list-item]]
+</div>
+
+[[logo]]<div class="logo">%s</div>[[/logo]]
+[[text]]<div class="text">%s</div>[[/text]]
+TEMPLATE;
+
+		$result = $templater->render( $tpl, [
+			[
+				[
+					'tag'     => 'list-item',
+					'content' => [
+						[
+							[ 'tag' => 'logo', 'content' => 'LOGO1' ],
+							[ 'tag' => 'text', 'content' => 'TEXT1' ],
+						]
+					],
+				],
+			],
+		] );
+
+		$expected = <<<EXPECTED
+<div class="list">
+  <div class="sub-list">
+  	<div class="logo">LOGO1</div>
+  	<div class="text">TEXT1</div>
+  </div>
+</div>
+EXPECTED;
+
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
+	}
+
+	public function testNestedRepeaters() {
+		$templater = new Templater();
+
+		/**
+		 * Template with several tags and repeater.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]
+  <div class="sub-list">%s</div>
+  
+	[[logo]]<div class="logo">%s</div>[[/logo]]
+	[[text]]<div class="text">%s</div>[[/text]]
+  [[/list-item]]
+</div>
+TEMPLATE;
+
+		$result = $templater->render( $tpl, [
+			[
+				[
+					'tag'     => 'list-item',
+					'content' => [
+						[
+							[ 'tag' => 'logo', 'content' => 'LOGO1' ],
+							[ 'tag' => 'text', 'content' => 'TEXT1' ],
+						]
+					],
+				],
+			],
+		] );
+
+		$expected = <<<EXPECTED
+<div class="list">
+  <div class="sub-list">
+  	<div class="logo">LOGO1</div>
+  	<div class="text">TEXT1</div>
+  </div>
+</div>
+EXPECTED;
+
+
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
+
+		/**
+		 * Template with several tags and repeater.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]
+		%s
+  
+	[[logo]]<div class="logo">%s</div>[[/logo]]
+	[[text]]<div class="text">%s</div>[[/text]]
+  [[/list-item]]
+</div>
+TEMPLATE;
+
+		$result = $templater->render( $tpl, [
+			[
+				[
+					'tag'     => 'list-item',
+					'content' => [
+						[
+							[ 'tag' => 'logo', 'content' => 'LOGO1' ],
+							[ 'tag' => 'text', 'content' => 'TEXT1' ],
+						]
+					],
+				],
+			],
+		] );
+
+		$expected = <<<EXPECTED
+<div class="list">
+  <div class="logo">LOGO1</div><div class="text">TEXT1</div>
+</div>
+EXPECTED;
+
+
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
+	}
+
+	public function testGetRepeaters() {
+		$templater = new Templater();
+		$method    = new ReflectionMethod( Templater::class, 'get_repeaters' );
+		$method->setAccessible( true );
+
+		/**
+		 * Simple template with nested repeaters.
+		 */
+		$tpl = <<<TEMPLATE
+<div class="list">
+  %s[[list-item]]
+    %s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]
+  [[/list-item]]
+</div>
+TEMPLATE;
+
+		$result = $method->invoke( $templater, $tpl );
+
+		$expected = [
+			'result' => [
+				'clear' => [
+					PHP_EOL . '    %s' . PHP_EOL . '  ',
+					'<div class="logo">%s</div>',
+					'<div class="text">%s</div>'
+				],
+
+				'content' => [
+					PHP_EOL . '    %s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]' . PHP_EOL . '  ',
+					'<div class="logo">%s</div>',
+					'<div class="text">%s</div>'
+				],
+
+				'tag' => [
+					'list-item',
+					'logo',
+					'text',
+				],
+			],
+		];
+
+		$this->assertEquals( $expected['result'], $result['result'] );
 	}
 }
