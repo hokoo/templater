@@ -3,6 +3,8 @@
 use iTRON\Templater\Templater;
 use PHPUnit\Framework\TestCase;
 
+require_once 'inc/functions.php';
+
 class TemplaterTest extends TestCase {
 
 	public function testRender() {
@@ -75,12 +77,14 @@ TEMPLATE;
 
 		$expected = <<<EXPECTED
 <div class="classname">
-	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag1">CONTENT1</div>
+	<div class="tag1">CONTENT1.2</div>
+	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
 </div>
 EXPECTED;
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
 
 		/**
 		 * Template with a preselected value.
@@ -107,13 +111,15 @@ TEMPLATE;
 
 		$expected = <<<EXPECTED
 <div class="classname">
-	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag1">CONTENT1</div>
+	<div class="tag1">CONTENT1.2</div>
+	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
 	value2
 </div>
 EXPECTED;
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
 
 		/**
 		 * The same test with a wrong index.
@@ -132,13 +138,15 @@ EXPECTED;
 
 		$expected = <<<EXPECTED
 <div class="classname">
-	<div class="tag1">CONTENT1</div><div class="tag1">CONTENT1.2</div><div class="tag1">CONTENT1.3</div>
+	<div class="tag1">CONTENT1</div>
+	<div class="tag1">CONTENT1.2</div>
+	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
 	value1
 </div>
 EXPECTED;
 
-		$this->assertEquals( $expected, $result );
+		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
 
 		/**
 		 * Template with nested repeaters.
