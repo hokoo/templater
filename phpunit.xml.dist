@@ -9,6 +9,10 @@
 	>
 	<php>
 		<const name="DOING_TESTS" value="1" />
+
+		<ini name="xdebug.mode" value="debug"/>
+		<ini name="xdebug.client_port" value="9019"/>
+		<ini name="xdebug.idekey" value="PHPSTORM"/>
 	</php>
 	<testsuites>
 		<testsuite name="WP_Lock concurrency mutexes for WordPress test suite">
