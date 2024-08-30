@@ -11,13 +11,14 @@ I believe that you'd like to
 
 ## Table of Contents
 
+* [Table of Contents](#table-of-contents)
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [Getting Started](#getting-started)
-* [Simple using](#simple-using)
-* [Repeaters](#repeaters)
+  * [Simple using](#simple-using)
+  * [Repeaters](#repeaters)
   * [Nested repeater's tags](#nested-repeaters-tags)
-* [Predefined values](#predefined-values)
+  * [Predefined values](#predefined-values)
 
 
 ## Requirements
@@ -33,7 +34,7 @@ composer require hokoo/templater
 ## Getting Started
 Here are some examples of how to use the templater.
 
-## Simple using
+### Simple using
 
 ```php
 use iTRON\Templater\Templater;
@@ -97,7 +98,7 @@ $html = <<<TEMPLATE
 TEMPLATE;
 ```
 
-## Repeaters
+### Repeaters
 
 ```php
 $html = <<<TEMPLATE
@@ -265,7 +266,7 @@ $html = <<<TEMPLATE
 TEMPLATE;
 ```
 
-## Predefined values
+### Predefined values
 
 You can use predefined values for your tags. Put the predefined values in the tag separated by a pipe `|`. Predefined tag has not a closing part.
 
