@@ -251,7 +251,7 @@ $html = <<<TEMPLATE
 
 	<div class="content">
 		%2$s
-    </div>
+	</div>
 
 </div>
 [[/item]]
