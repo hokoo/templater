@@ -7,17 +7,22 @@ Lightweight, simple but powerful templater for rendering HTML templates in PHP.
 
 I believe that you'd like to 
 - keep your HTML clean and simple and 
-- bring logic to PHP (PHP itself is a templater, isn't it?). 
+- bring logic to PHP (PHP itself is a templater, isn't it?), not to HTML.
 
 ## Table of Contents
 
-* [Installation](#installation)
+* [Table of Contents](#table-of-contents)
 * [Requirements](#requirements)
+* [Installation](#installation)
 * [Getting Started](#getting-started)
-* [Simple using](#simple-using)
-* [Repeaters](#repeaters)
+  * [Simple using](#simple-using)
+  * [Repeaters](#repeaters)
   * [Nested repeater's tags](#nested-repeaters-tags)
-* [Predefined values](#predefined-values)
+  * [Predefined values](#predefined-values)
+
+
+## Requirements
+PHP 7.4 and later.
 
 ## Installation
 
@@ -25,24 +30,15 @@ I believe that you'd like to
 composer require hokoo/templater
 ```
 
-## Requirements
-PHP 7.4 and later.
-
 
 ## Getting Started
 Here are some examples of how to use the templater.
 
-## Simple using
+### Simple using
 
 ```php
 use iTRON\Templater\Templater;
-$t = new Templater();
-
-/**
- * HTML Template
- * @var string 
- */
-$template;
+$templater = new Templater();
 ```
 
 ```php
@@ -62,7 +58,7 @@ TEMPLATE;
 ```
 
 ```php
-return $t->render( $template, [
+return $templater->render( $html, [
     'class-foo', 
     'bar',
     'The Best Title',
@@ -102,7 +98,7 @@ $html = <<<TEMPLATE
 TEMPLATE;
 ```
 
-## Repeaters
+### Repeaters
 
 ```php
 $html = <<<TEMPLATE
@@ -124,7 +120,7 @@ TEMPLATE;
 ```
 
 ```php
-return $t->render( $template, [
+return $templater->render( $html, [
     'class-foo',
     'bar',
     [
@@ -153,6 +149,8 @@ The result would be:
     <div class="content">
         There is no content.
     </div>
+
+</div>
 ```
 
 ### Nested repeater's tags
@@ -163,7 +161,7 @@ You can even put repeater's tags inside another repeater's tags.
 $html = <<<TEMPLATE
 <div class="popup %1$s" data-popup="%2$s">
 
-    %3$s [[repeater_tag_name]]
+    %3$s [[item]]
     <div class="item">
         <div class="title">%1$s</div>
         
@@ -178,28 +176,29 @@ $html = <<<TEMPLATE
         </div>
 
     </div>
-    [[/repeater_tag_name]]
+    [[/item]]
 
 </div>
 TEMPLATE;
 ```
 
 ```php
-$repeated_forms_a = [ 
+$item_1 = [ 
     [ 'tag' => 'button', 'data' => [ 'button-1', 'Tap me' ] ], 
     [ 'tag' => 'button', 'data' => [ 'button-2', 'Do not tap me' ] ], 
 ];
-$repeated_forms_b = [ 
+
+$item_2 = [ 
     [ 'tag' => 'button', 'data' => [ 'button-3', 'I ain\'t a button' ] ], 
     [ 'tag' => 'button', 'data' => [ 'button-4', 'Ok' ] ], 
 ];
 
-return $t->render( $template, [
+return $templater->render( $html, [
     'class-foo',
     'bar',
     [
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'The Best Title',  $repeated_forms_a ] ],
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'There is no title', $repeated_forms_b ] ],
+        [ 'tag' => 'item', 'data' => [ 'The Best Title',  $item_1 ] ],
+        [ 'tag' => 'item', 'data' => [ 'There is no title', $item_2 ] ],
     ]
 ] );
 ```
@@ -240,7 +239,7 @@ The result would be:
 </div>
 ```
 
-In fact, it does not matter what order you describe the tags. The next template is identical for the previous one functionally.
+In fact, it does not matter what order you describe the tags. The next template is identical to the previous one functionally.
 
 ```php
 $html = <<<TEMPLATE
@@ -248,16 +247,16 @@ $html = <<<TEMPLATE
     %3$s
 </div>
 
-[[repeater_tag_name]]
+[[item]]
 <div class="item">
 	<div class="title">%1$s</div>
 
 	<div class="content">
 		%2$s
-    </div>
+	</div>
 
 </div>
-[[/repeater_tag_name]]
+[[/item]]
 
 [[button]]
 <button id="%s">
@@ -267,16 +266,19 @@ $html = <<<TEMPLATE
 TEMPLATE;
 ```
 
-## Predefined values
+### Predefined values
 
-Predefined modifier can only accept an integer value as index (starting from 0) of one of the predefined values. Any invalid value will be considered as 0. 
+You can use predefined values for your tags. Put the predefined values in the tag separated by a pipe `|`. Predefined tag has not a closing part.
+
+
+Predefined tag's modifier is `%d` and can only accept an integer value as index (starting from 0) of one of the predefined values. Any invalid modifier value will be considered as 0. 
 
 ```php
-$tpl = <<<TEMPLATE
+$html = <<<TEMPLATE
 <div class="[[classname1|classname2|classname3/]]%d"></div>
 TEMPLATE;
 
-$result = $templater->render( $tpl, [
+$result = $templater->render( $html, [
     1,
 ] );
 ```
