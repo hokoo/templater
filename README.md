@@ -7,26 +7,27 @@ Lightweight, simple but powerful templater for rendering HTML templates in PHP.
 
 I believe that you'd like to 
 - keep your HTML clean and simple and 
-- bring logic to PHP (PHP itself is a templater, isn't it?). 
+- bring logic to PHP (PHP itself is a templater, isn't it?), not to HTML.
 
 ## Table of Contents
 
-* [Installation](#installation)
 * [Requirements](#requirements)
+* [Installation](#installation)
 * [Getting Started](#getting-started)
 * [Simple using](#simple-using)
 * [Repeaters](#repeaters)
   * [Nested repeater's tags](#nested-repeaters-tags)
 * [Predefined values](#predefined-values)
 
+
+## Requirements
+PHP 7.4 and later.
+
 ## Installation
 
 ```bash
 composer require hokoo/templater
 ```
-
-## Requirements
-PHP 7.4 and later.
 
 
 ## Getting Started
