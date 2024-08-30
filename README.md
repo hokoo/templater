@@ -237,7 +237,7 @@ The result would be:
 </div>
 ```
 
-In fact, it does not matter what order you describe the tags. The next template is identical for the previous one functionally.
+In fact, it does not matter what order you describe the tags. The next template is identical to the previous one functionally.
 
 ```php
 $html = <<<TEMPLATE
