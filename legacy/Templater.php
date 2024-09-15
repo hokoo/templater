@@ -1,28 +1,28 @@
 <?php
 /**
- * iTRON Templater
+ * iTRON Templater.
+ *
+ * This class is to provide a back compat for the old templating system (up to v3.x);
+ * is not used in the new version;
+ * does not support the new templating system;
+ * is not maintained and will be removed in the future.
  */
 
 namespace iTRON\Templater;
 
 class Templater {
 
-	private static string $_regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
-	private static string $_preselected_regex = '/\[\[(?P<values>.+)\/\]\](?P<index>(?-U)\d+)/mUs';
-	private string $regex;
-	private string $preselected_regex;
+	private string $regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
+	private string $preselected_regex = '/\[\[(?P<values>.+)\/\]\](?P<index>(?-U)\d+)/mUs';
 	private string $preselected_separator = '|';
 
-	function __construct() {
-		$this->set_regex( self::$_regex );
-		$this->set_preselected_regex( self::$_preselected_regex );
-	}
-
-	public function set_preselected_regex( string $_preselected_regex ) {
+	public function set_preselected_regex( string $_preselected_regex ): Templater {
 		$this->preselected_regex = $_preselected_regex;
+
+		return $this;
 	}
 
-	public function set_regex( $regex ): Templater {
+	public function set_regex( string $regex ): Templater {
 		$this->regex = $regex;
 
 		return $this;

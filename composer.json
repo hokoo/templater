@@ -2,7 +2,7 @@
   "name": "hokoo/templater",
   "description": "Keep your templates in one place apart from your php code.",
   "minimum-stability": "stable",
-  "license": "proprietary",
+  "license": "GPL-3.0-only",
   "authors": [
     {
       "name": "Igor Tron",
@@ -11,7 +11,8 @@
   ],
   "autoload": {
     "psr-4": {
-      "iTRON\\Templater\\": "src/"
+      "iTRON\\Anatomy\\": "src/",
+      "iTRON\\Templater\\": "legacy/"
     }
   },
   "require-dev": {
