@@ -54,7 +54,6 @@ Here are some examples of how to use the templater.
     </div>
 
 </div>
-TEMPLATE;
 ```
 
 Tag - a point in the template where you can insert a value. Tag should be considered as a placeholder for a value. 
@@ -100,14 +99,12 @@ Predefined tags are tags that can render only values predefined by the template.
 Predefined tag's modifier can only accept an integer value as index of one of the predefined values (starting from 0). Any invalid modifier value (non-integer or integer that points beyond of the array) will be considered as 0.
 
 ```html
-$html = <<<TEMPLATE
 <div class="{{#class=[first|second|third]}}"></div>
 ```
 
 The default values' delimiter is `|`. You can change it by setting the `delimiter` property of the tag.
 
 ```html
-$html = <<<TEMPLATE
 <div class="{{#class=[first!!second!!third] delimiter=[!!]}}"></div>
 ```
 Let's render the template with the values.
@@ -139,7 +136,7 @@ return $templater->render( $html, [
 
 The result will be the same.
 
-But the more interesting part is that you can the containers to build the content by means blocks.
+But the more interesting part is that you can use the containers to build the content by means blocks.
 
 ### Blocks
 
@@ -220,7 +217,7 @@ $container->addBlock( 'article', [
     'content' => 'There is no content.',
 ] );
 
-// Add a plain text after the repeaters.
+// Add a plain text after the blocks.
 $container->addText( 'This is a plain text.' );
 
 return $templater->render( $html, [
