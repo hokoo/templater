@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once 'inc/functions.php';
 
-class TemplaterTest extends TestCase {
+class LegacyTest extends TestCase {
 
 	public function testRender() {
 		/**
