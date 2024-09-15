@@ -5,6 +5,8 @@
 
 HTML Templater for PHP.
 
+<img src="assets/anatomy-logo.png" alt="Anatomy logo" width="300" style="float: right; margin: 0 0 20px 30px; max-width: 40%"/>
+
 Lightweight, simple but powerful templater for rendering HTML templates in PHP.
 
 I believe that you'd like to 
