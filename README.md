@@ -21,6 +21,7 @@ I believe that you'd like to
   - [Containers](#containers)
   - [Blocks](#blocks)
   - [Nested blocks](#nested-blocks)
+  - [Detached blocks](#detached-blocks)
 
 
 ## Requirements
@@ -346,4 +347,18 @@ And again, it does not matter what order you describe blocks. The next template 
 <button>{{text}}</button>
 [[/button]]
 <!-- /Button's block -->
+```
+
+### Detached blocks
+
+Since we consider blocks as an almost independent template, you can use blocks out of context of the main template.
+
+Suppose, you need to render a "button" block in a different place. Great, there's no need to duplicate the block's code. Just render the block separately.
+
+```php
+echo $templater->renderBlock(
+    $html, 
+    'button', 
+    [ 'text' => 'Tap me' ] 
+);
 ```
