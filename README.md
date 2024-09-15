@@ -1,7 +1,11 @@
-# iTRON Templater
+# Anatomy: a templater for PHP
+
+[![Latest Stable Version](https://poser.pugx.org/hokoo/templater/v)](//packagist.org/packages/hokoo/templater) 
 [![PHPUnit Tests](https://github.com/hokoo/templater/actions/workflows/phpunit.yml/badge.svg)](https://github.com/hokoo/templater/actions/workflows/phpunit.yml)
 
 HTML Templater for PHP.
+
+<img src="assets/anatomy-logo.png" alt="Anatomy logo" width="300" style="float: right; margin: 0 0 20px 30px; max-width: 40%"/>
 
 Lightweight, simple but powerful templater for rendering HTML templates in PHP.
 
@@ -11,18 +15,19 @@ I believe that you'd like to
 
 ## Table of Contents
 
-* [Table of Contents](#table-of-contents)
-* [Requirements](#requirements)
-* [Installation](#installation)
-* [Getting Started](#getting-started)
-  * [Simple using](#simple-using)
-  * [Repeaters](#repeaters)
-  * [Nested repeater's tags](#nested-repeaters-tags)
-  * [Predefined values](#predefined-values)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+  - [Tags](#tags)
+  - [Predefined tags](#predefined-tags)
+  - [Containers](#containers)
+  - [Blocks](#blocks)
+  - [Nested blocks](#nested-blocks)
+  - [Detached blocks](#detached-blocks)
 
 
 ## Requirements
-PHP 7.4 and later.
+PHP 8.0 and later.
 
 ## Installation
 
@@ -34,256 +39,342 @@ composer require hokoo/templater
 ## Getting Started
 Here are some examples of how to use the templater.
 
-### Simple using
+### Tags
 
-```php
-use iTRON\Templater\Templater;
-$templater = new Templater();
-```
-
-```php
-$html = <<<TEMPLATE
-<div class="popup %s" data-popup="%s">
-    
-    <div class="title">
-        %s
-    </div>
+```html
+<div class="article">
+    <h2>
+        <!-- This is a tag with the name "title". -->
+        {{title}}
+    </h2>
     
     <div class="content">
-        %s
+        <!-- This is a tag with the name "content". -->
+        {{content}}
     </div>
 
 </div>
-TEMPLATE;
 ```
 
+Tag - a point in the template where you can insert a value. Tag should be considered as a placeholder for a value. 
+
+    In the Anatomy's paradigm, the 'tag' is only entity that can be replaced with a value.
+
+The tag is a string that starts with `{{` and ends with `}}`.
+
+So, in the example above, the `{{title}}` and `{{content}}` are tags.
+Let's render the template with the values.
+
 ```php
+use iTRON\Anatomy\Templater;
+$templater = new Templater();
+
 return $templater->render( $html, [
-    'class-foo', 
-    'bar',
-    'The Best Title',
-    'Anything you want'
+    'title'   => 'The Best Title',
+    'content' => 'Anything you want',
 ] );
 ```
 
 The result will be:
 ```html
-<div class="popup class-foo" data-popup="bar">
-    
-    <div class="title">
+<div class="article">
+    <h2>
+        <!-- This is a tag with the name "title". -->
         The Best Title
-    </div>
+    </h2>
     
     <div class="content">
+        <!-- This is a tag with the name "content". -->
         Anything you want
     </div>
-    
+
 </div>
 ```
-You can also use the numeric modifiers:
+
+### Predefined tags
+
+Predefined tags are tags that can render only values predefined by the template.
+
+
+Predefined tag's modifier can only accept an integer value as index of one of the predefined values (starting from 0). Any invalid modifier value (non-integer or integer that points beyond of the array) will be considered as 0.
+
+```html
+<div class="{{#class=[first|second|third]}}"></div>
+```
+
+The default values' delimiter is `|`. You can change it by setting the `delimiter` property of the tag.
+
+```html
+<div class="{{#class=[first!!second!!third] delimiter=[!!]}}"></div>
+```
+Let's render the template with the values.
 
 ```php
-$html = <<<TEMPLATE
-<div class="popup %1$s" data-popup="%2$s">
-    
-    <div class="title">
-        %3$s
-    </div>
+$result = $templater->render( $html, [
+    'class' => '1',
+] );
+```
+
+The result will be:
+```html
+<div class="second"></div>
+```
+
+### Containers
+
+Consider the example for tags again, but now we will use containers as values for the tags.
+```html
+<div class="article">
+    <h2>{{title}}</h2>
     
     <div class="content">
-        %4$s
+        {{content}}
     </div>
 
 </div>
-TEMPLATE;
 ```
 
-### Repeaters
+Render the template with the containers.
 
 ```php
-$html = <<<TEMPLATE
-<div class="popup %s" data-popup="%s">
+$title = new \iTRON\Anatomy\Container();
+$container->addText( 'The Best Title' );
 
-    %s 
-    [[repeater_tag_name]]
-        <div class="title">
-            %s
-        </div>
+return $templater->render( $html, [
+    'title'   => $title,
+    'content' => 'Anything you want',
+] );
+```
+
+The result will be the same.
+
+But the more interesting part is that you can use the containers to build the content by means blocks.
+
+### Blocks
+
+Blocks are a way to have a component-like structure in the template.
+Unlike tags, blocks themselves are not a placeholder for a value, but they just describe a pattern of the content. You can consider blocks as a template inside a template. This is why it does not matter where you put the block in the template.
+
+```html
+<div class="feed">
+    <h1>{{title}}</h1>
+
+    {{content}}
+    
+    <!-- This is a block with the name "article". -->
+    [[#article]]
+    <div class="article">
+        <h2>{{title}}</h2>
     
         <div class="content">
-            %s
+            {{content}}
         </div>
-    [[/repeater_tag_name]]
-
+    </div>
+    [[/article]]
 </div>
-TEMPLATE;
 ```
 
 ```php
+$content = new \iTRON\Anatomy\Container();
+$content->addBlock( 'article', [
+    'title'   => 'The Best Title',
+    'content' => 'Anything you want',
+] );
+$content->addBlock( 'article', [
+    'title'   => 'There is no title',
+    'content' => 'There is no content.',
+] );
+
 return $templater->render( $html, [
-    'class-foo',
-    'bar',
-    [
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'The Best Title', 'Anything you want.' ] ],
-        [ 'tag' => 'repeater_tag_name', 'data' => [ 'There is no title', 'There is no content.' ] ],
-    ]
+    'title'   => "Feed's Title",
+    'content' => $content
 ] );
 ```
 
 The result would be:
 ```html
-<div class="popup class-foo" data-popup="bar">
-
-    <div class="title">
-        The Best Title
+<div class="feed">
+    <h1>Feed's Title</h1>
+    
+    <!-- This is a container with the name "article". -->
+    <div class="article">
+        <h2>The Best Title</h2>
+    
+        <div class="content">
+            Anything you want
+        </div>
     </div>
-
-    <div class="content">
-        Anything you want.
+    
+    <div class="article">
+        <h2>There is no title</h2>
+    
+        <div class="content">
+            There is no content.
+        </div>
     </div>
-
-    <div class="title">
-        There is no title
-    </div>
-
-    <div class="content">
-        There is no content.
-    </div>
-
+  
 </div>
 ```
 
-### Nested repeater's tags
-
-You can even put repeater's tags inside another repeater's tags.
-
+Add a plain text after blocks.
+    
 ```php
-$html = <<<TEMPLATE
-<div class="popup %1$s" data-popup="%2$s">
+$container = new \iTRON\Anatomy\Container();
+$container->addBlock( 'article', [
+    'title'   => 'The Best Title',
+    'content' => 'Anything you want',
+] );
+$container->addBlock( 'article', [
+    'title'   => 'There is no title',
+    'content' => 'There is no content.',
+] );
 
-    %3$s [[item]]
+// Add a plain text after the blocks.
+$container->addText( 'This is a plain text.' );
+
+return $templater->render( $html, [
+    'title'   => "Feed's Title",
+    'content' => $container
+] );
+```
+
+The result would be:
+```html
+<div class="feed">
+    <h1>Feed's Title</h1>
+  
+    <div class="article">
+        <h2>The Best Title</h2>
+    
+        <div class="content">
+            Anything you want
+        </div>
+    </div>
+    
+    <div class="article">
+        <h2>There is no title</h2>
+    
+        <div class="content">
+            There is no content.
+        </div>
+    </div>
+  
+    This is a plain text.
+  
+</div>
+```
+
+### Nested blocks
+
+You can even put blocks inside another blocks.
+
+```html
+<div class="items">
+
+    {{items}}
+    
+    [[#item]]
     <div class="item">
-        <div class="title">%1$s</div>
+        <div class="title">{{title}}</div>
         
         <div class="content">
-            %2$s
+            {{buttons}}
             
-            [[button]]
-            <button id="%s">
-                %s
-            </button>
+            [[#button]]
+            <button>{{text}}</button>
             [[/button]]
         </div>
-
     </div>
     [[/item]]
 
 </div>
-TEMPLATE;
 ```
 
 ```php
-$item_1 = [ 
-    [ 'tag' => 'button', 'data' => [ 'button-1', 'Tap me' ] ], 
-    [ 'tag' => 'button', 'data' => [ 'button-2', 'Do not tap me' ] ], 
-];
+$buttons = new \iTRON\Anatomy\Container();
+$button->addBlock( 'button', [
+    'text' => 'Tap me',
+] );
+$button->addBlock( 'button', [
+    'text' => 'Do not tap me',
+] );
+$button->addBlock( 'button', [
+    'text' => 'I am not a button',
+] );
 
-$item_2 = [ 
-    [ 'tag' => 'button', 'data' => [ 'button-3', 'I ain\'t a button' ] ], 
-    [ 'tag' => 'button', 'data' => [ 'button-4', 'Ok' ] ], 
-];
-
-return $templater->render( $html, [
-    'class-foo',
-    'bar',
-    [
-        [ 'tag' => 'item', 'data' => [ 'The Best Title',  $item_1 ] ],
-        [ 'tag' => 'item', 'data' => [ 'There is no title', $item_2 ] ],
-    ]
+$container = new \iTRON\Anatomy\Container();
+$container->addBlock( 'item', [
+    'title'   => 'The Best Title',
+    'buttons' => $buttons,
 ] );
 ```
 
 The result would be:
 ```html
-<div class="popup class-foo" data-popup="bar">
+<div class="items">
 
     <div class="item">
         <div class="title">The Best Title</div>
         
         <div class="content">
-            <button id="button-1">
-                Tap me
-            </button>
+            <button>Tap me</button>
             
-            <button id="button-2">
-                Do not tap me
-            </button>
+            <button>Do not tap me</button>
+          
+            <button>I am not a button</button>
         </div>
 
-    </div>
-    
-    <div class="item">
-        <div class="title">There is no title</div>
-        
-        <div class="content">
-            <button id="button-3">
-                I ain't a button
-            </button>
-            
-            <button id="button-4">
-                Ok
-            </button>
-        </div>
     </div>
     
 </div>
 ```
 
-In fact, it does not matter what order you describe the tags. The next template is identical to the previous one functionally.
+As you can see, containers allow to have nested blocks with no restrictions on the blocks' depth.
 
-```php
-$html = <<<TEMPLATE
-<div class="popup %1$s" data-popup="%2$s">
-    %3$s
+And again, it does not matter what order you describe blocks. The next template is identical to the previous one functionally.
+
+```html
+<!-- General part -->
+<div class="items">
+    {{items}}
 </div>
+<!-- /General part -->
 
-[[item]]
+
+<!-- Item's block -->
+[[#item]]
 <div class="item">
-	<div class="title">%1$s</div>
+	<div class="title">{{title}}</div>
 
 	<div class="content">
-		%2$s
+        {{buttons}}
 	</div>
-
 </div>
 [[/item]]
+<!-- /Item's block -->
 
-[[button]]
-<button id="%s">
-	%s
-</button>
+<!-- Button's block -->
+[[#button]]
+<button>{{text}}</button>
 [[/button]]
-TEMPLATE;
+<!-- /Button's block -->
 ```
 
-### Predefined values
+### Detached blocks
 
-You can use predefined values for your tags. Put the predefined values in the tag separated by a pipe `|`. Predefined tag has not a closing part.
+Since we consider blocks as an almost independent template, you can use blocks out of context of the main template.
 
-
-Predefined tag's modifier is `%d` and can only accept an integer value as index (starting from 0) of one of the predefined values. Any invalid modifier value will be considered as 0. 
+Suppose, you need to render a "button" block in a different place. Great, there's no need to duplicate the block's code. Just render the block separately.
 
 ```php
-$html = <<<TEMPLATE
-<div class="[[classname1|classname2|classname3/]]%d"></div>
-TEMPLATE;
-
-$result = $templater->render( $html, [
-    1,
-] );
+echo $templater->renderBlock(
+    $html, 
+    'button', 
+    [ 'text' => 'Tap me' ] 
+);
 ```
+The result would be:
 
-The result will be:
 ```html
-<div class="classname2"></div>
+<button>Tap me</button>
 ```
