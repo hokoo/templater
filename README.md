@@ -27,7 +27,7 @@ I believe that you'd like to
 
 
 ## Requirements
-PHP 7.4 and later.
+PHP 8.0 and later.
 
 ## Installation
 
