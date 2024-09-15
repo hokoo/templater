@@ -373,3 +373,8 @@ echo $templater->renderBlock(
     [ 'text' => 'Tap me' ] 
 );
 ```
+The result would be:
+
+```html
+<button>Tap me</button>
+```
