@@ -123,6 +123,18 @@ The result will be:
 ### Containers
 
 Consider the example for tags again, but now we will use containers as values for the tags.
+```html
+<div class="article">
+    <h2>{{title}}</h2>
+    
+    <div class="content">
+        {{content}}
+    </div>
+
+</div>
+```
+
+Render the template with the containers.
 
 ```php
 $title = new \iTRON\Anatomy\Container();
