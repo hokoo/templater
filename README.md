@@ -19,8 +19,8 @@ I believe that you'd like to
   - [Tags](#tags)
   - [Predefined tags](#predefined-tags)
   - [Containers](#containers)
-  - [Repeaters](#repeaters)
-  - [Nested repeaters](#nested-repeaters)
+  - [Blocks](#blocks)
+  - [Nested blocks](#nested-blocks)
 
 
 ## Requirements
@@ -54,6 +54,14 @@ Here are some examples of how to use the templater.
 TEMPLATE;
 ```
 
+Tag - a point in the template where you can insert a value. Tag should be considered as a placeholder for a value. 
+
+    In the Anatomy's paradigm, the 'tag' is only entity that can be replaced with a value.
+
+The tag is a string that starts with `{{` and ends with `}}`.
+
+So, in the example above, the `{{title}}` and `{{content}}` are tags.
+Let's render the template with the values.
 
 ```php
 use iTRON\Anatomy\Templater;
@@ -128,9 +136,12 @@ return $templater->render( $html, [
 
 The result will be the same.
 
-But the more interesting part is that you can the containers to repeat the content.
+But the more interesting part is that you can the containers to build the content by means blocks.
 
-### Repeaters
+### Blocks
+
+Blocks are a way to have a component-like structure in the template.
+Unlike tags, blocks themselves are not a placeholder for a value, but they just describe a pattern of the content. You can consider blocks as a template inside a template. This is why it does matter where you put the block in the template.
 
 ```html
 <div class="feed">
@@ -138,7 +149,7 @@ But the more interesting part is that you can the containers to repeat the conte
 
     {{content}}
     
-    <!-- This is a repeater with the name "article". -->
+    <!-- This is a block with the name "article". -->
     [[#article]]
     <div class="article">
         <h2>{{title}}</h2>
@@ -153,15 +164,14 @@ But the more interesting part is that you can the containers to repeat the conte
 
 ```php
 $content = new \iTRON\Anatomy\Container();
-$content->addRepeater( 'article', [
+$content->addBlock( 'article', [
     'title'   => 'The Best Title',
     'content' => 'Anything you want',
 ] );
-$content->addRepeater( 'article', [
+$content->addBlock( 'article', [
     'title'   => 'There is no title',
     'content' => 'There is no content.',
 ] );
-
 
 return $templater->render( $html, [
     'title'   => "Feed's Title",
@@ -194,15 +204,15 @@ The result would be:
 </div>
 ```
 
-Add a plain text after the repeaters.
+Add a plain text after blocks.
     
 ```php
 $container = new \iTRON\Anatomy\Container();
-$container->addRepeater( 'article', [
+$container->addBlock( 'article', [
     'title'   => 'The Best Title',
     'content' => 'Anything you want',
 ] );
-$container->addRepeater( 'article', [
+$container->addBlock( 'article', [
     'title'   => 'There is no title',
     'content' => 'There is no content.',
 ] );
@@ -242,9 +252,9 @@ The result would be:
 </div>
 ```
 
-### Nested repeaters
+### Nested blocks
 
-You can even put repeater's tags inside another repeater's tags.
+You can even put blocks inside another blocks.
 
 ```html
 <div class="items">
@@ -270,18 +280,18 @@ You can even put repeater's tags inside another repeater's tags.
 
 ```php
 $buttons = new \iTRON\Anatomy\Container();
-$button->addRepeater( 'button', [
+$button->addBlock( 'button', [
     'text' => 'Tap me',
 ] );
-$button->addRepeater( 'button', [
+$button->addBlock( 'button', [
     'text' => 'Do not tap me',
 ] );
-$button->addRepeater( 'button', [
+$button->addBlock( 'button', [
     'text' => 'I am not a button',
 ] );
 
 $container = new \iTRON\Anatomy\Container();
-$container->addRepeater( 'item', [
+$container->addBlock( 'item', [
     'title'   => 'The Best Title',
     'buttons' => $buttons,
 ] );
@@ -307,9 +317,9 @@ The result would be:
 </div>
 ```
 
-As you can see, containers allow to have nested repeaters without restrictions on the repeater's depth.
+As you can see, containers allow to have nested blocks with no restrictions on the blocks' depth.
 
-And speaking about the template, it does not matter what order you describe the repeaters. The next template is identical to the previous one functionally.
+And again, it does not matter what order you describe blocks. The next template is identical to the previous one functionally.
 
 ```html
 <!-- General part -->
@@ -319,7 +329,7 @@ And speaking about the template, it does not matter what order you describe the 
 <!-- /General part -->
 
 
-<!-- Item's repeater -->
+<!-- Item's block -->
 [[#item]]
 <div class="item">
 	<div class="title">{{title}}</div>
@@ -329,11 +339,11 @@ And speaking about the template, it does not matter what order you describe the 
 	</div>
 </div>
 [[/item]]
-<!-- /Item's repeater -->
+<!-- /Item's block -->
 
-<!-- Button's repeater -->
+<!-- Button's block -->
 [[#button]]
 <button>{{text}}</button>
 [[/button]]
-<!-- /Button's repeater -->
+<!-- /Button's block -->
 ```
