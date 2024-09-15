@@ -153,7 +153,7 @@ But the more interesting part is that you can use the containers to build the co
 ### Blocks
 
 Blocks are a way to have a component-like structure in the template.
-Unlike tags, blocks themselves are not a placeholder for a value, but they just describe a pattern of the content. You can consider blocks as a template inside a template. This is why it does matter where you put the block in the template.
+Unlike tags, blocks themselves are not a placeholder for a value, but they just describe a pattern of the content. You can consider blocks as a template inside a template. This is why it does not matter where you put the block in the template.
 
 ```html
 <div class="feed">
