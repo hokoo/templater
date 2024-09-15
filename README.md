@@ -83,15 +83,23 @@ The result will be:
 
 ### Predefined tags
 
-You can use predefined tags for your tags. Put the predefined values in the tag separated by a pipe `|`.
+Predefined tags are tags that can render only values predefined by the template.
 
 
 Predefined tag's modifier can only accept an integer value as index of one of the predefined values (starting from 0). Any invalid modifier value (non-integer or integer that points beyond of the array) will be considered as 0.
 
 ```html
 $html = <<<TEMPLATE
-<div class="{{class[first|second|third]}}"></div>
+<div class="{{#class=[first|second|third]}}"></div>
 ```
+
+The default values' delimiter is `|`. You can change it by setting the `delimiter` property of the tag.
+
+```html
+$html = <<<TEMPLATE
+<div class="{{#class=[first!!second!!third] delimiter=[!!]}}"></div>
+```
+Let's render the template with the values.
 
 ```php
 $result = $templater->render( $html, [
