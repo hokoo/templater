@@ -138,7 +138,7 @@ Render the template with the containers.
 
 ```php
 $title = new \iTRON\Anatomy\Container();
-$container->addText( 'The Best Title' );
+$title->addText( 'The Best Title' );
 
 return $templater->render( $html, [
     'title'   => $title,
@@ -302,10 +302,14 @@ $button->addBlock( 'button', [
     'text' => 'I am not a button',
 ] );
 
-$container = new \iTRON\Anatomy\Container();
-$container->addBlock( 'item', [
+$items = new \iTRON\Anatomy\Container();
+$items->addBlock( 'item', [
     'title'   => 'The Best Title',
     'buttons' => $buttons,
+] );
+
+return $templater->render( $html, [
+    'items' => $items
 ] );
 ```
 
@@ -364,7 +368,7 @@ And again, it does not matter what order you describe blocks. The next template 
 
 Since we consider blocks as an almost independent template, you can use blocks out of context of the main template.
 
-Suppose, you need to render a "button" block in a different place. Great, there's no need to duplicate the block's code. Just render the block separately.
+Suppose, you need to render a "button" block from the template above in a different place. Great, there's no need to duplicate the block's code. Just render the block separately.
 
 ```php
 echo $templater->renderBlock(
