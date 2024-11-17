@@ -23,12 +23,12 @@ class ContainerTest extends TestCase {
 	public function testAddRepeater() {
 		$array = new Container();
 
-		$array->addRepeater( 'repeater_0', [ 'key' => 'data' ] );
+		$array->addBlock( 'repeater_0', [ 'key' => 'data' ] );
 
 		$this->assertEquals(
 			[
 				[
-					'repeater' => 'repeater_0',
+					'block' => 'repeater_0',
 					'data'     => [ 'key' => 'data' ],
 				],
 			],
@@ -36,7 +36,7 @@ class ContainerTest extends TestCase {
 		);
 
 		$container = new Container();
-		$container->addRepeater( 'repeater_1', [
+		$container->addBlock( 'repeater_1', [
 			'key' => 'data',
 			'key2' => $array
 		] );
@@ -46,12 +46,12 @@ class ContainerTest extends TestCase {
 		$this->assertEquals(
 			[
 				[
-					'repeater' => 'repeater_1',
+					'block' => 'repeater_1',
 					'data'     => [
 						'key' => 'data',
 						'key2' => [
 							[
-								'repeater' => 'repeater_0',
+								'block' => 'repeater_0',
 								'data'     => [ 'key' => 'data' ],
 							],
 						],

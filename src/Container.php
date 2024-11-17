@@ -13,7 +13,7 @@ class Container {
 		return $this;
 	}
 
-	public function addRepeater( string $name, array $data ): static {
+	public function addBlock( string $name, array $data ): static {
 		array_walk(
 			$data,
 			function ( &$value ) {
@@ -26,11 +26,11 @@ class Container {
 		return $this;
 	}
 
-	protected function getElementSchema( string $repeater = '', $data = [] ): array {
+	protected function getElementSchema( string $blockName = '', $data = [] ): array {
 		$schema = [];
 
-		if ( ! empty( $repeater ) ) {
-			$schema[ Core::REPEATER_SCHEMA_KEY ] = $repeater;
+		if ( ! empty( $blockName ) ) {
+			$schema[ Core::BLOCK_NAME_SCHEMA_KEY ] = $blockName;
 		}
 
 		if ( ! empty( $data ) ) {
