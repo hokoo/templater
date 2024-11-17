@@ -155,6 +155,14 @@ class Templater {
 		return [ 'result' => $result, 'data' => $m ];
 	}
 
+	/**
+	 * Renders a repeater content.
+	 *
+	 * @param $data
+	 * @param $context
+	 *
+	 * @return mixed|string
+	 */
 	private function get_repeaters_data( $data, $context ) {
 		if ( is_array( $data ) ) :
 			$substr = '';
