@@ -2,13 +2,11 @@
 
 namespace iTRON\Anatomy;
 
-class Container {
-	protected array $data = [];
+use ArrayObject;
 
-	public function __construct() {}
-
+class Container extends ArrayObject {
 	public function addText( string $text ): static {
-		$this->data[] = $this->getElementSchema( data: $text );
+		$this->append( $this->getElementSchema( data: $text ) );
 
 		return $this;
 	}
@@ -17,11 +15,11 @@ class Container {
 		array_walk(
 			$data,
 			function ( &$value ) {
-				$value = is_a( $value, static::class ) ? $value->toArray() : $value;
+				$value = is_a( $value, static::class ) ? $value->getArrayCopy() : $value;
 			}
 		);
 
-		$this->data[] = $this->getElementSchema( $name, $data );
+		$this->append( $this->getElementSchema( $name, $data ) );
 
 		return $this;
 	}
@@ -38,9 +36,5 @@ class Container {
 		}
 
 		return $schema;
-	}
-
-	public function toArray(): array {
-		return $this->data;
 	}
 }
