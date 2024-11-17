@@ -171,13 +171,13 @@ class Templater {
 					}
 
 					$substr .= $this->format(
-						$context['result']['clear'][ $context['result']['tag'][ array_search( $row['tag'], $context['result']['tag'] ) ] ],
+						$context['result']['clear'][ $row['tag'] ],
 						$content
 					);
 				elseif ( ! empty( $content ) ) :
 					$substr .= ( is_array( $content ) ? implode( '', $content ) : $content );
 				elseif ( ! empty( $row['tag'] ) ) :
-					$substr .= $context['result']['clear'][ $context['result']['tag'][ array_search( $row['tag'], $context['result']['tag'] ) ] ];
+					$substr .= $context['result']['clear'][ $row['tag'] ];
 				endif;
 			endforeach;
 			$out = $substr;
