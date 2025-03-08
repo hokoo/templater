@@ -1,0 +1,68 @@
+<?php
+
+
+use iTRON\Anatomy\Container;
+use PHPUnit\Framework\TestCase;
+
+class ContainerTest extends TestCase {
+	public function testAddText() {
+		$array = new Container();
+
+		$array->addText( 'Lorem Ipsum Dolor sit Amet' );
+
+		$this->assertEquals(
+			[
+				[
+					'data' => 'Lorem Ipsum Dolor sit Amet',
+				],
+			],
+			$array->getArrayCopy()
+		);
+	}
+
+	public function testAddBlock() {
+		$array = new Container();
+
+		$array->addBlock( 'repeater_0', [ 'key' => 'data' ] );
+
+		$this->assertEquals(
+			[
+				[
+					'block' => 'repeater_0',
+					'data'     => [ 'key' => 'data' ],
+				],
+			],
+			$array->getArrayCopy()
+		);
+
+		$container = new Container();
+		$container->addBlock( 'repeater_1', [
+			'key' => 'data',
+			'key2' => $array
+		] );
+
+		$container->addText( 'Lorem Ipsum Dolor sit Amet' );
+
+		$this->assertEquals(
+			[
+				[
+					'block' => 'repeater_1',
+					'data'     => [
+						'key' => 'data',
+						'key2' => [
+							[
+								'block' => 'repeater_0',
+								'data'     => [ 'key' => 'data' ],
+							],
+						],
+					],
+				],
+				[
+					'data' => 'Lorem Ipsum Dolor sit Amet',
+				],
+			],
+			$container->getArrayCopy()
+		);
+
+	}
+}

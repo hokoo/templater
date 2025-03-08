@@ -1,552 +1,185 @@
 <?php
 
-use iTRON\Templater\Templater;
 use PHPUnit\Framework\TestCase;
+use iTRON\Anatomy\Templater;
+use iTRON\Anatomy\Container;
 
-require_once 'inc/functions.php';
+class TemplaterTest extends TestCase
+{
 
-class TemplaterTest extends TestCase {
-
-	public function testRender() {
-		/**
-		 * Simple template with two placeholders.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="classname">
-	<div>%s</div>
-	<div>%s</div>
-</div>
-TEMPLATE;
-
+	public function testRenderSimpleTemplate()
+	{
 		$templater = new Templater();
-		$result    = $templater->render( $tpl, [ 'CONTENT1', 'CONTENT2' ] );
-
-		$expected = <<<EXPECTED
-<div class="classname">
-	<div>CONTENT1</div>
-	<div>CONTENT2</div>
-</div>
-EXPECTED;
-
-		$this->assertEquals( $expected, $result );
-
-		/**
-		 * Template with a repeater.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="classname">
-	%s[[tag1]]<div class="tag1">%s</div>[[/tag1]]
-</div>
-TEMPLATE;
-
-		$templater = new Templater();
-		$result    = $templater->render( $tpl, [
-			[
-				[ 'tag' => 'tag1', 'content' => 'CONTENT' ],
-			],
-		] );
-
-		$expected = <<<EXPECTED
-<div class="classname">
-	<div class="tag1">CONTENT</div>
-</div>
-EXPECTED;
-
-		$this->assertEquals( $expected, $result );
-
-		/**
-		 * Template with two repeaters.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="classname">
-	%s[[tag1]]<div class="tag1">%s</div>[[/tag1]]
-	%s[[tag2]]<div class="tag2">%s</div>[[/tag2]]
-</div>
-TEMPLATE;
-
-		$result = $templater->render( $tpl, [
-			[
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1' ],
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1.2' ],
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1.3' ],
-			],
-			[
-				[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
-			]
-		] );
-
-		$expected = <<<EXPECTED
-<div class="classname">
-	<div class="tag1">CONTENT1</div>
-	<div class="tag1">CONTENT1.2</div>
-	<div class="tag1">CONTENT1.3</div>
-	<div class="tag2">CONTENT2</div>
-</div>
-EXPECTED;
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-
-		/**
-		 * Template with a preselected value.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="classname">
-	%s[[tag1]]<div class="tag1">%s</div>[[/tag1]]
-	%s[[tag2]]<div class="tag2">%s</div>[[/tag2]]
-	[[value1|value2|value3/]]%d
-</div>
-TEMPLATE;
-
-		$result = $templater->render( $tpl, [
-			[
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1' ],
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1.2' ],
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1.3' ],
-			],
-			[
-				[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
-			],
-			1,
-		] );
-
-		$expected = <<<EXPECTED
-<div class="classname">
-	<div class="tag1">CONTENT1</div>
-	<div class="tag1">CONTENT1.2</div>
-	<div class="tag1">CONTENT1.3</div>
-	<div class="tag2">CONTENT2</div>
-	value2
-</div>
-EXPECTED;
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-
-		/**
-		 * The same test with a wrong index.
-		 */
-		$result = $templater->render( $tpl, [
-			[
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1' ],
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1.2' ],
-				[ 'tag' => 'tag1', 'content' => 'CONTENT1.3' ],
-			],
-			[
-				[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
-			],
-			10,
-		] );
-
-		$expected = <<<EXPECTED
-<div class="classname">
-	<div class="tag1">CONTENT1</div>
-	<div class="tag1">CONTENT1.2</div>
-	<div class="tag1">CONTENT1.3</div>
-	<div class="tag2">CONTENT2</div>
-	value1
-</div>
-EXPECTED;
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-	}
-
-	public function testNestedRepeaters() {
-		$templater = new Templater();
-
-		/**
-		 * Template with several tags.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]<div class="sub-list">%s</div>[[/list-item]]
-</div>
-
-[[logo]]<div class="logo">%s</div>[[/logo]]
-[[text]]<div class="text">%s</div>[[/text]]
-TEMPLATE;
-
-		$result = $templater->render( $tpl, [
-			[
-				[
-					'tag'     => 'list-item',
-					'content' => [
-						[
-							[ 'tag' => 'logo', 'content' => 'LOGO1' ],
-							[ 'tag' => 'text', 'content' => 'TEXT1' ],
-						]
-					],
-				],
-			],
-		] );
-
-		$expected = <<<EXPECTED
-<div class="list">
-  <div class="sub-list">
-  	<div class="logo">LOGO1</div>
-  	<div class="text">TEXT1</div>
-  </div>
-</div>
-EXPECTED;
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-
-		/**
-		 * Template with nested repeaters.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="classname">
-	%s
-	[[tag1]]
-	<div class="tag1">
-		%s
-		[[tag2]]<div class="tag2">%s</div>[[/tag2]]
-	</div>
-	[[/tag1]]
-</div>
-TEMPLATE;
-
-		$result = $templater->render( $tpl, [
-			[
-				[
-					'tag'     => 'tag1',
-					'content' => [
-						[
-							[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
-						],
-					]
-				],
-			],
-		] );
-
-		$expected = <<<EXPECTED
-<div class="classname">
-	<div class="tag1">
-		<div class="tag2">CONTENT2</div>
-	</div>
-</div>
-EXPECTED;
-
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-
-		/**
-		 * Tests template with several nested tags.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-  <div class="sub-list">%s</div>
-  
-	[[logo]]<div class="logo">%s</div>[[/logo]]
-	[[text]]<div class="text">%s</div>[[/text]]
-  [[/list-item]]
-</div>
-TEMPLATE;
-
-		$result = $templater->render( $tpl, [
-			[
-				[
-					'tag'     => 'list-item',
-					'content' => [
-						[
-							[ 'tag' => 'logo', 'content' => 'LOGO1' ],
-							[ 'tag' => 'text', 'content' => 'TEXT1' ],
-						]
-					],
-				],
-			],
-		] );
-
-		$expected = <<<EXPECTED
-<div class="list">
-  <div class="sub-list">
-  	<div class="logo">LOGO1</div>
-  	<div class="text">TEXT1</div>
-  </div>
-</div>
-EXPECTED;
-
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-
-		$tpl = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-		%s
-  
-	[[logo]]
-	<div class="logo">
-		%s
-	</div>
-	[[/logo]]
-	[[text]]<div class="text">%s</div>[[/text]]
-	[[img]]<img src="%s" alt=""/>[[/img]]
-  [[/list-item]]
-</div>
-TEMPLATE;
-
+		$template = "{{greeting}}, {{name}}!";
 		$data = [
+			'greeting' => 'Hello',
+			'name' => 'John'
+		];
+
+		$result = $templater->render($template, $data);
+
+		$this->assertEquals("Hello, John!", $result);
+	}
+
+	public function testRenderWithMultipleBlocks()
+	{
+		$template = "Before {{content}}[[#person]]{{name}} [[/person]] After {{after}}[[#footer]]{{text}}[[/footer]]";
+
+		$content = new Container();
+		$content->addBlock('person', ['name' => 'Alice']);
+		$content->addBlock('person', ['name' => 'Bob']);
+
+		$after = new Container();
+		$after->addBlock( 'footer',
 			[
-				[
-					'tag'     => 'list-item',
-					'content' => [
-						[
-							[
-								'tag'     => 'logo',
-								'content' => [
-									[
-										[ 'tag' => 'img', 'content' => 'localhost//image1.jpg' ],
-									]
-								]
-							],
-							[ 'tag' => 'text', 'content' => 'TEXT1' ],
-						]
-					],
-				],
-			],
-		];
+				'text' => 'Footer text',
+			]
+		);
 
-		$result = $templater->render( $tpl, $data );
+		$templater = new Templater();
 
-		$expected = <<<EXPECTED
-<div class="list">
-  <div class="logo">
-  	<img src="localhost//image1.jpg" alt=""/>
-  </div>
-  <div class="text">TEXT1</div>
-</div>
-EXPECTED;
+		$result = $templater->render(
+			$template,
+			[
+				'content' => $content,
+				'after' => $after
+			]
+		);
 
-
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
-
-		/**
-		 * The same test, but with a deeper nesting.
-		 */
-
-		$tpl = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-		%s
-  
-	[[logo]]
-	<div class="logo">
-		%s
-		[[img]]<img src="%s" alt=""/>[[/img]]
-	</div>
-	[[/logo]]
-	[[text]]<div class="text">%s</div>[[/text]]
-  [[/list-item]]
-</div>
-TEMPLATE;
-
-		$result = $templater->render( $tpl, $data );
-		// This fails.
-		$this->assertEquals( remove_spaces( $expected ), remove_spaces( $result ) );
+		$this->assertEquals("Before Alice Bob  After Footer text", $result);
 	}
 
-	public function testGetRepeaters() {
+	public function testRenderWithNestedBlocks()
+	{
+		$template = "Before " .
+		"{{content}}[[#person]]{{name}}: {{position}}[[#position]]{{title}} - {{exp}}[[/position]][[/person]] " .
+		"After {{after}}[[#footer]]{{text}}[[/footer]]";
+
+		$content = new Container();
+		$content->addBlock('person', [
+			'name' => 'Alice',
+			'position' => ( new Container() )
+				->addBlock('position', ['title' => 'Developer', 'exp' => '5 years'])
+				->addBlock('position', ['title' => 'Designer', 'exp' => '3 years'])
+		]);
+
+		$after = new Container();
+		$after->addBlock( 'footer',
+			[
+				'text' => 'Footer text',
+			]
+		);
+
 		$templater = new Templater();
-		$method    = new ReflectionMethod( Templater::class, 'get_repeaters' );
-		$method->setAccessible( true );
-
-		/**
-		 * Simple template with nested repeaters.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-    %s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]
-  [[/list-item]]
-</div>
-TEMPLATE;
-
-		$result = $method->invoke( $templater, $tpl );
-
-		$expected = [
-			'result' => [
-				'clear' => [
-					'list-item' => '%s',
-					'logo'      => '<div class="logo">%s</div>',
-					'text'      => '<div class="text">%s</div>'
-				],
-
-				'content' => [
-					'%s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]',
-					'<div class="logo">%s</div>',
-					'<div class="text">%s</div>'
-				],
-
-				'tag' => [
-					'list-item',
-					'logo',
-					'text',
-				],
-			],
-		];
-
-		$this->assertEquals(
-			remove_spaces_recursively( $expected['result'] ),
-			remove_spaces_recursively( $result['result'] )
+		$result = $templater->render(
+			$template,
+			[
+				'content' => $content,
+				'after' => $after
+			]
 		);
 
-		/**
-		 * Deep nested.
-		 */
-		$tpl = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-		%s
-  
-	[[logo]]
-	<div class="logo">
-		%s
-	</div>
-	[[/logo]]
-	[[text]]<div class="text">%s</div>[[/text]]
-	[[img]]<img src="%s" alt=""/>[[/img]]
-  [[/list-item]]
-</div>
-TEMPLATE;
+		$this->assertEquals("Before Alice: Developer - 5 yearsDesigner - 3 years After Footer text", $result);
+	}
 
-		$result   = $method->invoke( $templater, $tpl );
-		$expected = [
-			'result' => [
-				'clear' => [
-					'list-item' => '%s',
-					'logo'      => '<div class="logo">%s</div>',
-					'text'      => '<div class="text">%s</div>',
-					'img'       => '<img src="%s" alt=""/>',
-				],
+	public function testRenderPredefined() {
+		$template = "<div class='{{#class=[zero|one|two|three]}}' id='{{#id=[*foo*bar] delimiter=[*]}}'>{{content}}</div>";
 
-				'content' => [
-					'%s[[logo]]<div class="logo">%s</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]][[img]]<img src="%s" alt=""/>[[/img]]',
-					'<div class="logo">%s</div>',
-					'<div class="text">%s</div>',
-					'<img src="%s" alt=""/>',
-				],
-
-				'tag' => [
-					'list-item',
-					'logo',
-					'text',
-					'img',
-				],
-			],
-		];
-
-		$this->assertEquals(
-			remove_spaces_recursively( $expected['result'] ),
-			remove_spaces_recursively( $result['result'] )
+		$templater = new Templater();
+		$result = $templater->render(
+			$template,
+			[
+				'content' => 'Content',
+				'class' => 2,
+				'id' => 1,
+			]
 		);
 
-		/**
-		 * The same, but with a deeper nesting.
-		 */
-		$tpl      = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-		%s
-  
-	[[logo]]
-	<div class="logo">
-		%s
-		[[img]]<img src="%s" alt=""/>[[/img]]
-	</div>
-	[[/logo]]
-	[[text]]<div class="text">%s</div>[[/text]]
-  [[/list-item]]
-</div>
-TEMPLATE;
-		$expected = [
-			'result' => [
-				'clear' => [
-					'list-item' => '%s',
-					'logo'      => '<div class="logo">%s</div>',
-					'text'      => '<div class="text">%s</div>',
-					'img'       => '<img src="%s" alt=""/>',
-				],
+		$this->assertEquals("<div class='two' id='foo'>Content</div>", $result);
+	}
 
-				'content' => [
-					'%s[[logo]]<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]]</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]',
-					'<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]]</div>',
-					'<div class="text">%s</div>',
-					'<img src="%s" alt=""/>',
-				],
+	public function testRenderWithManyTags() {
+		$template = "<div class='{{#class=[zero|one|two|three]}}' id='{{#id=[*foo*bar] delimiter=[*]}}'>{{content}}</div>";
+		$template .= "[[#body]]<h1>{{title}}</h1><span>{{header}}</span>[[/body]]";
+		$template .= "[[#footer]]<footer>{{one}} - {{two}}</footer>[[#copy]]<copy>{{text}}</copy>[[/copy]][[/footer]]{{footer}}";
 
-				'tag' => [
-					'list-item',
-					'logo',
-					'text',
-					'img',
-				],
-			],
-		];
+		$content = new Container();
+		$content->addBlock('body', [
+			'title' => 'Title 1',
+			'header' => 'Header 1',
+		]);
+		$content->addBlock('body', [
+			'title' => 'Title 2',
+			'header' => 'Header 2',
+		]);
+		$content->addText( 'Finally. ' );
 
-		$result = $method->invoke( $templater, $tpl );
-		// This fails.
+		$footer = new Container();
+		$footer->addBlock('footer', [
+			'one' => 'One',
+			'two' => 'Two',
+		]);
+		$footer->addBlock('copy', [
+			'text' => 'Copy text',
+		]);
+		$footer->addBlock('footer', [
+			'one' => 'New One',
+			'two' => ( new Container() )
+				->addBlock('copy', ['text' => 'New Copy text'])
+				->addBlock('copy', ['text' => 'New Copy text 2'])
+		]);
+		$footer->addText( 'Footer text' );
+
+		$templater = new Templater();
+		$result = $templater->render(
+			$template,
+			[
+				'content' => $content,
+				'class' => 2,
+				'id' => 1,
+				'footer' => $footer,
+			]
+		);
+
 		$this->assertEquals(
-			remove_spaces_recursively( $expected['result'] ),
-			remove_spaces_recursively( $result['result'] )
+			"<div class='two' id='foo'><h1>Title 1</h1><span>Header 1</span><h1>Title 2</h1><span>Header 2</span>Finally. </div>"
+			. "<footer>One - Two</footer>"
+			. "<copy>Copy text</copy>"
+			. "<footer>New One - <copy>New Copy text</copy><copy>New Copy text 2</copy></footer>"
+			. "Footer text",
+			$result
 		);
 	}
 
-	public function testDeepNested_repeaters_parser() {
+	public function testRenderBlock() {
+		$template = "<div class='{{#class=[zero|one|two|three]}}' id='{{#id=[*foo*bar] delimiter=[*]}}'>{{content}}</div>";
+		$template .= "[[#body]]<h1>{{title}}</h1><span>{{header}}</span>[[/body]]";
+		$template .= "[[#footer]]<footer>{{one}} - {{two}}</footer>[[#copy]]<copy>{{text}}</copy>[[/copy]][[/footer]]{{footer}}";
+
 		$templater = new Templater();
-		$method    = new ReflectionMethod( Templater::class, 'get_repeaters' );
-		$method->setAccessible( true );
-
-		/**
-		 * The same, but with a deeper nesting.
-		 */
-		$tpl      = <<<TEMPLATE
-<div class="list">
-  %s[[list-item]]
-		%s
-  
-	[[logo]]
-	<div class="logo">
-		%s
-		[[img]]<img src="%s" alt=""/>[[/img]]
-		[[caption]]<span class="caption">%s</span>[[/caption]]
-	</div>
-	[[/logo]]
-	[[text]]<div class="text">%s</div>[[/text]]
-  [[/list-item]]
-</div>
-TEMPLATE;
-		$expected = [
-			'result' => [
-				'clear' => [
-					'list-item' => '%s',
-					'logo'      => '<div class="logo">%s</div>',
-					'img'       => '<img src="%s" alt=""/>',
-					'caption'   => '<span class="caption">%s</span>',
-					'text'      => '<div class="text">%s</div>',
-				],
-
-				'content' => [
-					'%s[[logo]]<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]][[caption]]<span class="caption">%s</span>[[/caption]]</div>[[/logo]][[text]]<div class="text">%s</div>[[/text]]',
-					'<div class="logo">%s[[img]]<img src="%s" alt=""/>[[/img]][[caption]]<span class="caption">%s</span>[[/caption]]</div>',
-					'<div class="text">%s</div>',
-					'<img src="%s" alt=""/>',
-					'<span class="caption">%s</span>',
-				],
-
-				'tag' => [
-					'list-item',
-					'logo',
-					'text',
-					'img',
-					'caption',
-				],
-			],
-		];
-
-		$result = $method->invoke( $templater, $tpl );
-		// This fails.
-		$this->assertEquals(
-			remove_spaces_recursively( $expected['result'] ),
-			remove_spaces_recursively( $result['result'] )
+		$result = $templater->renderBlock(
+			$template,
+			'copy',
+			[
+				'text' => 'Copy text',
+			]
 		);
+
+		$this->assertEquals("<copy>Copy text</copy>", $result);
+
+		// Single block rendering using another block as an inner content.
+		$templater = new Templater();
+		$result = $templater->renderBlock(
+			$template,
+			'body',
+			[
+				'title' => 'Title 1',
+				'header' => ( new Container() )
+					->addBlock('copy', ['text' => 'Copy text'])
+					->addBlock('copy', ['text' => 'Copy text 2'])
+			]
+		);
+
+		$this->assertEquals("<h1>Title 1</h1><span><copy>Copy text</copy><copy>Copy text 2</copy></span>", $result);
 	}
 }
