@@ -16,7 +16,7 @@ class ContainerTest extends TestCase {
 					'data' => 'Lorem Ipsum Dolor sit Amet',
 				],
 			],
-			(array) $array
+			$array->getArrayCopy()
 		);
 	}
 
@@ -32,7 +32,7 @@ class ContainerTest extends TestCase {
 					'data'     => [ 'key' => 'data' ],
 				],
 			],
-			(array) $array
+			$array->getArrayCopy()
 		);
 
 		$container = new Container();
