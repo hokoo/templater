@@ -14,13 +14,6 @@ class Container extends ArrayObject {
 	}
 
 	public function addBlock( string $name, array $data ): static {
-//		array_walk(
-//			$data,
-//			function ( &$value ) {
-//				$value = is_a( $value, static::class ) ? $value->getArrayCopy() : $value;
-//			}
-//		);
-
 		$this->append( $this->getElementSchema( $name, $data ) );
 
 		return $this;
