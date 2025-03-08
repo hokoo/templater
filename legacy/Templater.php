@@ -65,17 +65,19 @@ class Templater {
 			return $subject;
 		}
 
-		$result = $this->get_repeaters( $subject );
-		if ( empty( $result ) ) {
+		// Find all repeaters in the template.
+		$repeaters = $this->get_repeaters( $subject );
+		if ( empty( $repeaters ) ) {
 			return $invert ? $subject : $this->format( $subject, $args );
 		}
 
-		$pre_result = str_replace( $result['data'][0], '', $subject );
+		// Cut repeater tags off from the template.
+		$pre_result = str_replace( $repeaters['data'][0], '', $subject );
 
 		$replace = [];
-		foreach ( $args as $data ) :
+		foreach ( $args as $data_item ) :
 
-			$replace [] = $this->get_repeaters_data( $data, $result );
+			$replace [] = $this->get_repeaters_data( $data_item, $repeaters );
 
 			if ( $invert ) {
 				break;
@@ -161,38 +163,37 @@ class Templater {
 	 * @param $data
 	 * @param $context
 	 *
-	 * @return mixed|string
+	 * @return string
 	 */
-	private function get_repeaters_data( $data, $context ) {
-		if ( is_array( $data ) ) :
-			$substr = '';
+	private function get_repeaters_data( $data, $context ) : string {
+		if ( ! is_array( $data ) ) {
+			return (string) $data;
+		}
 
-			foreach ( $data as $row ) :
-				$content = $row['content'] ?? @$row['data'];
-				if ( isset( $row['tag'] ) && ! empty( $content ) ) :
-					if ( is_array( $content ) ) {
-						foreach ( $content as $i => $maybe_subarray ):
-							if ( is_array( $maybe_subarray ) ) {
-								$content[ $i ] = $this->get_repeaters_data( $maybe_subarray, $context );
-							}
-						endforeach;
+		$result = '';
+
+		foreach ( $data as $row ) {
+			$content = $row['content'] ?? @$row['data'];
+			if ( isset( $row['tag'] ) && ! empty( $content ) ) {
+				if ( is_array( $content ) ) {
+					foreach ( $content as $i => $maybe_subarray ) {
+						if ( is_array( $maybe_subarray ) ) {
+							$content[ $i ] = $this->get_repeaters_data( $maybe_subarray, $context );
+						}
 					}
+				}
 
-					$substr .= $this->format(
-						$context['result']['clear'][ $row['tag'] ],
-						$content
-					);
-				elseif ( ! empty( $content ) ) :
-					$substr .= ( is_array( $content ) ? implode( '', $content ) : $content );
-				elseif ( ! empty( $row['tag'] ) ) :
-					$substr .= $context['result']['clear'][ $row['tag'] ];
-				endif;
-			endforeach;
-			$out = $substr;
-		else :
-			$out = $data;
-		endif;
+				$result .= $this->format(
+					$context['result']['clear'][ $row['tag'] ],
+					$content
+				);
+			} elseif ( ! empty( $content ) ) {
+				$result .= ( is_array( $content ) ? implode( '', $content ) : $content );
+			} elseif ( ! empty( $row['tag'] ) ) {
+				$result .= $context['result']['clear'][ $row['tag'] ];
+			}
+		}
 
-		return $out;
+		return $result;
 	}
 }
