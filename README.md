@@ -78,8 +78,9 @@ return $templater->render( $html, [
 
 </div>
 ```
+<details>
+<summary>Read more theory about Tags</summary>
 
-#### Theory:
 Tag - a point in the template where you can insert a value. Tag should be considered as a placeholder for a value. 
 
     In the Anatomy's paradigm, the 'tag' is only entity that can be replaced with a value.
@@ -88,7 +89,7 @@ The tag is a string that starts with `{{` and ends with `}}`.
 
 So, in the example above, the `{{title}}` and `{{content}}` are tags.
 Let's render the template with the values.
-
+</details>
 
 ### Predefined tags
 #### Example:
@@ -107,7 +108,8 @@ $result = $templater->render( $html, [
 <div class="second"></div>
 ```
 
-#### Theory:
+<details>
+<summary>Read more theory about Predefined Tags</summary>
 Predefined tags are tags that can render only values predefined by the template.
 
 
@@ -119,9 +121,7 @@ The default values' delimiter is `|`. You can change it by setting the `delimite
 ```html
 <div class="{{#class=[first!!second!!third] delimiter=[!!]}}"></div>
 ```
-Let's render the template with the values.
-
-
+</details>
 
 ### Blocks & Containers
 #### Example:
@@ -199,14 +199,15 @@ return $templater->render( $html, [
 </div>
 ```
 
-#### Theory:
+<details>
+<summary>Read more theory about Blocks & Containers</summary>
 
 Blocks are a way to have a component-like structure in the template. You can consider blocks as a template inside a template. 
 
 You can define as many blocks as you want and render them in any order.
 
 You can put one block into another block. This is how you can create a nested structure without any restrictions on the depth of nesting.
-
+</details>
 
 ### Detached mode
 
