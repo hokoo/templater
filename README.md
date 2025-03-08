@@ -37,7 +37,7 @@ composer require hokoo/templater
 ## Getting Started
 Here are some examples of how to use the templater.
 
-### Tags
+### :a: Tags
 #### Example:
 ```html
 <div class="article">
@@ -91,7 +91,7 @@ So, in the example above, the `{{title}}` and `{{content}}` are tags.
 Let's render the template with the values.
 </details>
 
-### Predefined tags
+### :a: Predefined tags
 #### Example:
 ```html
 <div class="{{#class=[first|second|third]}}"></div>
@@ -123,7 +123,7 @@ The default values' delimiter is `|`. You can change it by setting the `delimite
 ```
 </details>
 
-### Blocks & Containers
+### :a: Blocks & Containers
 #### Example:
 ```html
 <div class="feed">
@@ -209,7 +209,7 @@ You can define as many blocks as you want and render them in any order.
 You can put one block into another block. This is how you can create a nested structure without any restrictions on the depth of nesting.
 </details>
 
-### Detached mode
+### :a: Detached mode
 
 Since we consider blocks as an almost independent template, you can use blocks out of context of the main template.
 
