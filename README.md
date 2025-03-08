@@ -10,18 +10,19 @@ HTML Templater for PHP.
 Lightweight, simple but powerful templater for rendering HTML templates in PHP.
 
 I believe that you'd like to 
-- keep your HTML clean and simple and 
-- bring logic to PHP (PHP itself is a templater, isn't it?), not to HTML.
+- keep your HTML clean and simple, and 
+- maintain the logic in PHP, not in HTML.
 
 ## Table of Contents
 
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-  - [Tags](#tags)
-  - [Predefined tags](#predefined-tags)
-  - [Blocks & Containers](#blocks--containers)
-  - [Detached mode](#detached-mode)
+  - [Tags](#a-tags)
+  - [Predefined tags](#a-predefined-tags)
+  - [Blocks & Containers](#a-blocks--containers)
+  - [Detached mode](#a-detached-mode)
+- [Back compatibility](#back-compatibility)
 
 
 ## Requirements
@@ -236,3 +237,5 @@ The result would be:
     </div>
 </div>
 ```
+## Back compatibility
+Version 3 is still supported. Syntax of the older versions is not supported anymore.
