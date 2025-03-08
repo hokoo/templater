@@ -20,7 +20,7 @@ class ContainerTest extends TestCase {
 		);
 	}
 
-	public function testAddRepeater() {
+	public function testAddBlock() {
 		$array = new Container();
 
 		$array->addBlock( 'repeater_0', [ 'key' => 'data' ] );
@@ -61,7 +61,7 @@ class ContainerTest extends TestCase {
 					'data' => 'Lorem Ipsum Dolor sit Amet',
 				],
 			],
-			(array) $container
+			$container->getArrayCopy()
 		);
 
 	}

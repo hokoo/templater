@@ -61,6 +61,7 @@ EXPECTED;
 <div class="classname">
 	%s[[tag1]]<div class="tag1">%s</div>[[/tag1]]
 	%s[[tag2]]<div class="tag2">%s</div>[[/tag2]]
+	%s
 </div>
 TEMPLATE;
 
@@ -72,7 +73,8 @@ TEMPLATE;
 			],
 			[
 				[ 'tag' => 'tag2', 'content' => 'CONTENT2' ],
-			]
+			],
+			'CONTENT3',
 		] );
 
 		$expected = <<<EXPECTED
@@ -81,6 +83,7 @@ TEMPLATE;
 	<div class="tag1">CONTENT1.2</div>
 	<div class="tag1">CONTENT1.3</div>
 	<div class="tag2">CONTENT2</div>
+	CONTENT3
 </div>
 EXPECTED;
 
