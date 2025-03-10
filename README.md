@@ -167,6 +167,8 @@ $content->addBlock( 'article', [
 // Or you can add a plain text.
 $content->addText( 'Plain text.' );
 
+$templater = new iTRON\Anatomy\Templater();
+
 return $templater->render( $html, [
     'title'   => "Feed's Title",
     'content' => $content
@@ -239,3 +241,12 @@ The result would be:
 ```
 ## Back compatibility
 Version 3 is still supported. Syntax of the older versions is not supported anymore.
+
+To use v3 syntax, you have to instantiate the legacy version of the templater:
+
+```php
+$templater = new \iTRON\Templater\Templater();
+
+// Instead of
+// $templater = new iTRON\Anatomy\Templater();
+```
