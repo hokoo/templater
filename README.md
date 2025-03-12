@@ -100,13 +100,15 @@ Let's render the template with the values.
 #### PHP code:
 
 ```php
+$templater = new \iTRON\Anatomy\Templater();
+
 $result = $templater->render( $html, [
-    'class' => '1',
+    'class' => 0,
 ] );
 ```
 #### The result will be:
 ```html
-<div class="second"></div>
+<div class="first"></div>
 ```
 
 <details>
@@ -219,6 +221,8 @@ Since we consider blocks as an almost independent template, you can use blocks o
 Suppose, you need to render the "article" block from the template above in a different place. Great, there's no need to duplicate the block's code. Just render the block separately.
 
 ```php
+$templater = new \iTRON\Anatomy\Templater();
+
 echo $templater->renderBlock(
     $html, 
     'article', 
@@ -248,5 +252,5 @@ To use v3 syntax, you have to instantiate the legacy version of the templater:
 $templater = new \iTRON\Templater\Templater();
 
 // Instead of
-// $templater = new iTRON\Anatomy\Templater();
+// $templater = new \iTRON\Anatomy\Templater();
 ```
