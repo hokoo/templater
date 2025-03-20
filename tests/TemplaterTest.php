@@ -62,6 +62,12 @@ class TemplaterTest extends TestCase
 				->addBlock('position', ['title' => 'Developer', 'exp' => '5 years'])
 				->addBlock('position', ['title' => 'Designer', 'exp' => '3 years'])
 		]);
+		$content->addBlock('person', [
+			'name' => 'Harry',
+			'position' => ( new Container() )
+				->addBlock('position', ['title' => 'Lead', 'exp' => '15 years'])
+				->addBlock('position', ['title' => 'Manager', 'exp' => '10 years'])
+		]);
 
 		$after = new Container();
 		$after->addBlock( 'footer',
@@ -79,7 +85,11 @@ class TemplaterTest extends TestCase
 			]
 		);
 
-		$this->assertEquals("Before Alice: Developer - 5 yearsDesigner - 3 years After Footer text", $result);
+		$expected = "Before " .
+		            "Alice: Developer - 5 yearsDesigner - 3 years" .
+		            "Harry: Lead - 15 yearsManager - 10 years" .
+		            " After Footer text";
+		$this->assertEquals($expected, $result);
 	}
 
 	public function testRenderPredefined() {
