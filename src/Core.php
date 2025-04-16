@@ -24,7 +24,7 @@ final class Core {
 	}
 
 	public function render( string $singleBlock = '' ): string {
-		if ( empty( $this->data ) ) {
+		if ( empty( $this->data ) && empty( $singleBlock) ) {
 			return $this->template;
 		}
 
