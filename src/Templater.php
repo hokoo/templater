@@ -21,7 +21,7 @@ class Templater {
 	public function renderBlock(
 		string $template,
 		string $blockName,
-		array $data
+		array $data = []
 	): string {
 		$engine = new Core(
 			$template,
