@@ -164,6 +164,7 @@ class TemplaterTest extends TestCase
 	public function testRenderBlock() {
 		$template = "<div class='{{#class=[zero|one|two|three]}}' id='{{#id=[*foo*bar] delimiter=[*]}}'>{{content}}</div>";
 		$template .= "[[#body]]<h1>{{title}}</h1><span>{{header}}</span>[[/body]]";
+		$template .= "[[#smth]]<h1>Hardcoded title</h1><span>Hi there!</span>[[/smth]]";
 		$template .= "[[#footer]]<footer>{{one}} - {{two}}</footer>[[#copy]]<copy>{{text}}</copy>[[/copy]][[/footer]]{{footer}}";
 
 		$templater = new Templater();
@@ -191,5 +192,14 @@ class TemplaterTest extends TestCase
 		);
 
 		$this->assertEquals("<h1>Title 1</h1><span><copy>Copy text</copy><copy>Copy text 2</copy></span>", $result);
+
+		$templater = new Templater();
+		$result = $templater->renderBlock(
+			$template,
+			'smth',
+			[]
+		);
+
+		$this->assertEquals("<h1>Hardcoded title</h1><span>Hi there!</span>", $result);
 	}
 }
