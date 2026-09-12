@@ -200,6 +200,28 @@ class ContainerTest extends TestCase {
 		$this->assertSame( '<b>zero</b>', $result );
 	}
 
+	public function testTemplaterTreatsAnExplicitEmptyBlockNameAsText(): void {
+		$container = new Container();
+		$container->append( [ 'block' => '', 'data' => 'text' ] );
+
+		$result = ( new Templater() )->render( '{{content}}', [ 'content' => $container ] );
+
+		$this->assertSame( 'text', $result );
+	}
+
+	public function testTemplaterRejectsNonArrayDataForANamedBlock(): void {
+		$container = new Container();
+		$container->append( [ 'block' => 'card', 'data' => 'invalid' ] );
+
+		$this->expectException( InvalidTemplateDataException::class );
+		$this->expectExceptionMessage( 'Data for block "card" must be an array.' );
+
+		( new Templater() )->render(
+			'{{content}}[[#card]]{{value}}[[/card]]',
+			[ 'content' => $container ]
+		);
+	}
+
 	public function testOneContainerCanBeBoundFromMultipleDataPaths(): void {
 		$container = ( new Container() )->addText( 'shared' );
 
@@ -213,6 +235,15 @@ class ContainerTest extends TestCase {
 
 	public function testTemplaterRejectsAContainerElementWithoutData(): void {
 		$container = new Container();
+		$container->append( [ 'block' => 'card' ] );
+
+		$this->expectException( InvalidTemplateDataException::class );
+
+		( new Templater() )->render( '{{content}}', [ 'content' => $container ] );
+	}
+
+	public function testTemplaterRejectsAMalformedElementAfterAValidElement(): void {
+		$container = ( new Container() )->addText( 'valid prefix' );
 		$container->append( [ 'block' => 'card' ] );
 
 		$this->expectException( InvalidTemplateDataException::class );

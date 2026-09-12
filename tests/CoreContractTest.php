@@ -74,6 +74,12 @@ class CoreContractTest extends TestCase {
 		$this->assertSame( '', $result );
 	}
 
+	public function testRegularTagRendersASingleItemFlatArray(): void {
+		$result = ( new Templater() )->render( '{{value}}', [ 'value' => [ 'only' ] ] );
+
+		$this->assertSame( 'only', $result );
+	}
+
 	public function testRegularTagRendersAnEmptyContainerAsAnEmptyString(): void {
 		$result = ( new Templater() )->render( '{{value}}', [ 'value' => new Container() ] );
 
@@ -95,6 +101,12 @@ class CoreContractTest extends TestCase {
 		$this->expectException( InvalidTemplateDataException::class );
 
 		( new Templater() )->render( '{{value}}', [ 'value' => [ 'one', [ 'two' ] ] ] );
+	}
+
+	public function testRegularTagRejectsANestedArrayAsTheFirstItem(): void {
+		$this->expectException( InvalidTemplateDataException::class );
+
+		( new Templater() )->render( '{{value}}', [ 'value' => [ [ 'nested' ], 'after' ] ] );
 	}
 
 	public function testRegularTagRejectsNonStringableObjects(): void {
