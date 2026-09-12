@@ -169,6 +169,35 @@ class CoreContractTest extends TestCase {
 		$this->assertSame( 'third', $result );
 	}
 
+	/**
+	 * @dataProvider invalidCustomDelimiterIndexProvider
+	 */
+	public function testCustomDelimiterFallsBackToTheFirstValue( mixed $modifier ): void {
+		$result = ( new Templater() )->render(
+			'{{#variant=[first!!second!!third] delimiter=[!!]}}',
+			[ 'variant' => $modifier ]
+		);
+
+		$this->assertSame( 'first', $result );
+	}
+
+	public static function invalidCustomDelimiterIndexProvider(): array {
+		return [
+			'non-integer' => [ '1' ],
+			'negative integer' => [ -1 ],
+			'out-of-range integer' => [ 3 ],
+		];
+	}
+
+	public function testEmptyCustomDelimiterUsesTheDefaultDelimiter(): void {
+		$result = ( new Templater() )->render(
+			'{{#variant=[first|second] delimiter=[]}}',
+			[ 'variant' => 1 ]
+		);
+
+		$this->assertSame( 'second', $result );
+	}
+
 	public function testPredefinedTagAndDelimiterCanBeNamedZero(): void {
 		$result = ( new Templater() )->render(
 			'{{#0=[first0second] delimiter=[0]}}',

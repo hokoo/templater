@@ -77,20 +77,27 @@ class Templater {
 		$container->setContext( $context );
 
 		foreach ( $container as $item ) {
-			$item = $this->validateContainerItem( $item );
-			$data = $item[ Core::DATA_SCHEMA_KEY ];
-
-			if (
-				isset( $item[ Core::BLOCK_NAME_SCHEMA_KEY ] )
-				&& '' !== $item[ Core::BLOCK_NAME_SCHEMA_KEY ]
-				&& is_array( $data )
-			) {
-				$this->bindDataMap( $data, $context, $seen );
-				continue;
-			}
-
-			$this->bindContext( $data, $context, $seen );
+			$this->bindContainerItem( $item, $context, $seen );
 		}
+	}
+
+	/**
+	 * @param \SplObjectStorage<Container, null> $seen
+	 */
+	private function bindContainerItem( mixed $item, Core $context, \SplObjectStorage $seen ): void {
+		$item = $this->validateContainerItem( $item );
+		$data = $item[ Core::DATA_SCHEMA_KEY ];
+
+		if (
+			isset( $item[ Core::BLOCK_NAME_SCHEMA_KEY ] )
+			&& '' !== $item[ Core::BLOCK_NAME_SCHEMA_KEY ]
+			&& is_array( $data )
+		) {
+			$this->bindDataMap( $data, $context, $seen );
+			return;
+		}
+
+		$this->bindContext( $data, $context, $seen );
 	}
 
 	/**

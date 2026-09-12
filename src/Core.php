@@ -199,14 +199,29 @@ REGEX;
      * @param array<string, mixed>       $data
      */
     private function resolvePredefinedTag( array $matches, array $data ): string {
-        $delimiter = isset( $matches['delimiter'] ) && '' !== $matches['delimiter']
-            ? $matches['delimiter']
-            : self::PREDEFINED_DELIMITER;
-        $values = explode( $delimiter, $matches['predefined_values'] );
-        $modifier = $data[ $matches['predefined_tag'] ] ?? null;
-        $index = is_int( $modifier ) && $modifier >= 0 ? $modifier : 0;
+        $values = explode( $this->resolvePredefinedDelimiter( $matches ), $matches['predefined_values'] );
+        $index = $this->resolvePredefinedIndex( $data[ $matches['predefined_tag'] ] ?? null );
 
         return $values[ $index ] ?? $values[0];
+    }
+
+    /**
+     * @param array<int|string, string> $matches
+     */
+    private function resolvePredefinedDelimiter( array $matches ): string {
+        if ( ! isset( $matches['delimiter'] ) || '' === $matches['delimiter'] ) {
+            return self::PREDEFINED_DELIMITER;
+        }
+
+        return $matches['delimiter'];
+    }
+
+    private function resolvePredefinedIndex( mixed $modifier ): int {
+        if ( ! is_int( $modifier ) || $modifier < 0 ) {
+            return 0;
+        }
+
+        return $modifier;
     }
 
     private function stringifyValue( mixed $value, string $tag ): string {
