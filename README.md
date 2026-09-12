@@ -22,6 +22,7 @@ I believe that you'd like to
   - [Predefined tags](#a-predefined-tags)
   - [Blocks & Containers](#a-blocks--containers)
   - [Detached mode](#a-detached-mode)
+- [Rendering contract and escaping](#rendering-contract-and-escaping)
 - [Back compatibility](#back-compatibility)
 
 
@@ -88,6 +89,10 @@ Tag - a point in the template where you can insert a value. Tag should be consid
 
 The tag is a string that starts with `{{` and ends with `}}`.
 
+Regular tags render raw values. Use `{{tag|e}}` for user-controlled HTML text or
+quoted HTML attribute values. Attribute placeholders must always be enclosed in
+quotes. See [Rendering contract and escaping](#rendering-contract-and-escaping).
+
 So, in the example above, the `{{title}}` and `{{content}}` are tags.
 Let's render the template with the values.
 </details>
@@ -117,6 +122,8 @@ Predefined tags are tags that can render only values predefined by the template.
 
 
 Predefined tag's modifier can only accept an integer value as index of one of the predefined values (starting from 0). Any invalid modifier value (non-integer or integer that points beyond of the array) will be considered as 0.
+
+A missing, negative, or out-of-range modifier is also considered as 0.
 
 
 The default values' delimiter is `|`. You can change it by setting the `delimiter` property of the tag.
@@ -211,6 +218,9 @@ Blocks are a way to have a component-like structure in the template. You can con
 
 You can define as many blocks as you want and render them in any order.
 
+Each block definition must have a unique name. The same definition can be
+rendered repeatedly and recursively through nested containers.
+
 You can put one block into another block. This is how you can create a nested structure without any restrictions on the depth of nesting.
 </details>
 
@@ -243,8 +253,34 @@ The result would be:
     </div>
 </div>
 ```
+
+## Rendering contract and escaping
+
+Calling `render( $template, [] )` intentionally returns the original template
+without replacing tags, extracting blocks, or validating its syntax. Detached
+blocks are different: `renderBlock()` can render a hard-coded block with its
+default empty data array.
+
+`{{tag}}` remains raw for version 4 compatibility. Use `{{tag|e}}` for HTML
+escaping:
+
+```php
+$templater->render( '<p>{{message|e}}</p>', [
+    'message' => '<strong>User text</strong>',
+] );
+// <p>&lt;strong&gt;User text&lt;/strong&gt;</p>
+```
+
+HTML escaping is not a substitute for JavaScript, CSS, or URL-specific
+encoding. In HTML attributes, always put an escaped placeholder inside quotes,
+for example `data-label="{{label|e}}"`; never use an unquoted placeholder. The
+complete value, error, block grammar, and security contracts are documented in
+[Anatomy template language](docs/template-language.md).
+
 ## Back compatibility
-Version 3 is still supported. Syntax of the older versions is not supported anymore.
+Version 3 compatibility is deprecated as of 4.2 and is planned for removal in
+version 5. It receives compatibility fixes during the version 4 lifecycle but
+does not receive new features. Syntax older than version 3 is not supported.
 
 To use v3 syntax, you have to instantiate the legacy version of the templater:
 
