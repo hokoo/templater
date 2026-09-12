@@ -4,6 +4,9 @@ namespace iTRON\Anatomy;
 
 class Templater {
 
+	/**
+	 * @param array<string, mixed> $data
+	 */
 	public function render(
 		string $template,
 		array $data
@@ -18,6 +21,9 @@ class Templater {
 		return $engine->render();
 	}
 
+	/**
+	 * @param array<string, mixed> $data
+	 */
 	public function renderBlock(
 		string $template,
 		string $blockName,
@@ -33,23 +39,49 @@ class Templater {
 		return $engine->render( $blockName );
 	}
 
+	/**
+	 * @param array<string, mixed> $data
+	 */
 	protected function defineContext( array $data, Core $context ): static {
-		foreach ( $data as $key => $value ) {
-			if ( $value instanceof Container ) {
-				$value->setContext( $context );
-				$inner = (array) $value;
+		/** @var \SplObjectStorage<Container, null> $seen */
+		$seen = new \SplObjectStorage();
 
-				$set = array_column( $inner, Core::DATA_SCHEMA_KEY );
-
-				// Filter out empty or non-array values
-				$set = array_filter( $set, 'is_array' );
-
-				// We can afford (we have to actually) to lose keys here as we need to preserve values only.
-				$set = array_map( fn( $item ) => array_values( $item ), $set );
-				$this->defineContext( array_merge( ...$set ), $context );
-			}
+		foreach ( $data as $value ) {
+			$this->bindContext( $value, $context, $seen );
 		}
 
 		return $this;
+	}
+
+	/**
+	 * @param \SplObjectStorage<Container, null> $seen
+	 */
+	private function bindContext( mixed $value, Core $context, \SplObjectStorage $seen ): void {
+		if ( $value instanceof Container ) {
+			if ( $seen->contains( $value ) ) {
+				return;
+			}
+
+			$seen->attach( $value );
+			$value->setContext( $context );
+
+			foreach ( $value as $item ) {
+				if ( ! is_array( $item ) || ! array_key_exists( Core::DATA_SCHEMA_KEY, $item ) ) {
+					throw new Exception\InvalidTemplateDataException(
+						'A container item must use the Anatomy element schema.'
+					);
+				}
+
+				$this->bindContext( $item[ Core::DATA_SCHEMA_KEY ], $context, $seen );
+			}
+
+			return;
+		}
+
+		if ( is_array( $value ) ) {
+			foreach ( $value as $item ) {
+				$this->bindContext( $item, $context, $seen );
+			}
+		}
 	}
 }
