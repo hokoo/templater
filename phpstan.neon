@@ -1,0 +1,8 @@
+parameters:
+	level: 5
+	paths:
+		- src
+		- legacy
+	parallel:
+		maximumNumberOfProcesses: 1
+	tmpDir: /tmp/templater-phpstan
