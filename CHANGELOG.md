@@ -25,6 +25,8 @@
 - Array-to-string warnings in regular tags.
 - Uninitialized context errors from standalone containers now produce a clear
   `LogicException`.
+- Cyclic container and array data now fail explicitly instead of exhausting
+  process memory.
 - Missing or invalid predefined indexes now consistently select the first value.
 - Legacy rendering of `"0"`, replacement strings containing `$1` or backslashes,
   and unknown repeater diagnostics.

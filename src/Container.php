@@ -14,6 +14,7 @@ use LogicException;
  */
 class Container extends ArrayObject {
 	protected ?Core $context = null;
+	private bool $exporting = false;
 
 	public function addText( string $text ): static {
 		$this->append( $this->getElementSchema( data: $text ) );
@@ -36,7 +37,7 @@ class Container extends ArrayObject {
 	protected function getElementSchema( string $blockName = '', mixed $data = [] ): array {
 		$schema = [];
 
-		if ( ! empty( $blockName ) ) {
+		if ( '' !== $blockName ) {
 			$schema[ Core::BLOCK_NAME_SCHEMA_KEY ] = $blockName;
 		}
 
@@ -68,24 +69,62 @@ class Container extends ArrayObject {
 	 * Convert the object to its array representation recursively.
 	 */
 	public function getArrayCopy(): array {
+		if ( $this->exporting ) {
+			throw new InvalidTemplateDataException( 'Cyclic container reference detected.' );
+		}
+
+		$this->exporting = true;
+
+		try {
+			return $this->exportElements();
+		} finally {
+			$this->exporting = false;
+		}
+	}
+
+	private function exportElements(): array {
 		$result = parent::getArrayCopy();
 
 		foreach ( $result as $key => $value ) {
-			if ( ! is_array( $value ) || ! array_key_exists( Core::DATA_SCHEMA_KEY, $value ) ) {
-				throw new InvalidTemplateDataException( 'A container item must use the Anatomy element schema.' );
-			}
-
-			if ( ! is_array( $value[ Core::DATA_SCHEMA_KEY ] ) ) {
-				continue;
-			}
-
-			foreach ( $value[ Core::DATA_SCHEMA_KEY ] as $k => $v ) {
-				if ( $v instanceof static ) {
-					$result[ $key ][ Core::DATA_SCHEMA_KEY ][ $k ] = $v->getArrayCopy();
-				}
-			}
+			$result[ $key ] = $this->exportElement( $value );
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @return array{block?: mixed, data: mixed}
+	 */
+	private function exportElement( mixed $element ): array {
+		if ( ! is_array( $element ) || ! array_key_exists( Core::DATA_SCHEMA_KEY, $element ) ) {
+			throw new InvalidTemplateDataException( 'A container item must use the Anatomy element schema.' );
+		}
+
+		$element[ Core::DATA_SCHEMA_KEY ] = $this->exportValue( $element[ Core::DATA_SCHEMA_KEY ] );
+
+		return $element;
+	}
+
+	private function exportValue( mixed $value ): mixed {
+		if ( $value instanceof self ) {
+			return $value->getArrayCopy();
+		}
+
+		return is_array( $value ) ? $this->exportData( $value ) : $value;
+	}
+
+	/**
+	 * @param array<array-key, mixed> $data
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	private function exportData( array $data ): array {
+		foreach ( $data as $key => $value ) {
+			if ( $value instanceof self ) {
+				$data[ $key ] = $value->getArrayCopy();
+			}
+		}
+
+		return $data;
 	}
 }

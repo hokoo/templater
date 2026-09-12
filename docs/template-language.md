@@ -21,7 +21,8 @@ argument is omitted, which makes hard-coded detached blocks useful.
 `{{name}}` inserts a raw value. A missing tag or `null` renders as an empty
 string. Scalars and `Stringable` objects are converted to strings. A flat array
 of those values is concatenated in iteration order. Nested arrays, resources,
-and objects that are not stringable raise `InvalidTemplateDataException`.
+objects that are not stringable, and cyclic data references raise
+`InvalidTemplateDataException`.
 
 Inserted values are opaque: template-like text inside data is not parsed a
 second time.

@@ -68,6 +68,18 @@ class CoreContractTest extends TestCase {
 		$this->assertSame( 'one2three4.5', $result );
 	}
 
+	public function testRegularTagRendersAnEmptyArrayAsAnEmptyString(): void {
+		$result = ( new Templater() )->render( '{{value}}', [ 'value' => [] ] );
+
+		$this->assertSame( '', $result );
+	}
+
+	public function testRegularTagRendersAnEmptyContainerAsAnEmptyString(): void {
+		$result = ( new Templater() )->render( '{{value}}', [ 'value' => new Container() ] );
+
+		$this->assertSame( '', $result );
+	}
+
 	public function testContainerInsideAFlatArrayReceivesTheRenderingContext(): void {
 		$container = ( new Container() )->addText( 'nested container' );
 
@@ -157,6 +169,24 @@ class CoreContractTest extends TestCase {
 		$this->assertSame( 'third', $result );
 	}
 
+	public function testPredefinedTagAndDelimiterCanBeNamedZero(): void {
+		$result = ( new Templater() )->render(
+			'{{#0=[first0second] delimiter=[0]}}',
+			[ 0 => 1 ]
+		);
+
+		$this->assertSame( 'second', $result );
+	}
+
+	public function testPredefinedTagFallsBackForNestedArrayModifier(): void {
+		$result = ( new Templater() )->render(
+			'{{#variant=[first|second]}}',
+			[ 'variant' => [ [ 1 ] ] ]
+		);
+
+		$this->assertSame( 'first', $result );
+	}
+
 	public function testRegularEscapedAndPredefinedTagsCanBeInterleaved(): void {
 		$result = ( new Templater() )->render(
 			'{{raw}}|{{escaped|e}}|{{#variant=[first|second]}}|{{raw}}',
@@ -196,6 +226,15 @@ class CoreContractTest extends TestCase {
 		);
 
 		$this->assertSame( 'Hardcoded message', $result );
+	}
+
+	public function testHardcodedBlockNamedZeroCanBeRenderedWithEmptyData(): void {
+		$result = ( new Templater() )->renderBlock(
+			'[[#0]]Zero block[[/0]]',
+			'0'
+		);
+
+		$this->assertSame( 'Zero block', $result );
 	}
 
 	public function testStandaloneContainerCannotBeConvertedToAString(): void {

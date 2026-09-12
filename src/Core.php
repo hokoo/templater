@@ -30,6 +30,8 @@ REGEX;
     private string $rendered = '';
     private string $preparedTemplate = '';
     private bool $parsed = false;
+    /** @var \SplObjectStorage<Container, null> */
+    private \SplObjectStorage $renderingContainers;
 
     /**
      * @param array<string, mixed> $data
@@ -38,11 +40,12 @@ REGEX;
         public string $template,
         public array $data = []
     ) {
+        $this->renderingContainers = new \SplObjectStorage();
     }
 
     public function render( string $singleBlock = '' ): string {
         // An empty data set intentionally keeps the source template untouched.
-        if ( empty( $this->data ) && empty( $singleBlock ) ) {
+        if ( empty( $this->data ) && '' === $singleBlock ) {
             $this->rendered = $this->template;
             return $this->rendered;
         }
@@ -66,38 +69,63 @@ REGEX;
     }
 
     public function renderContainer( Container $container ): string {
+        if ( $this->renderingContainers->contains( $container ) ) {
+            throw new InvalidTemplateDataException( 'Cyclic container reference detected.' );
+        }
+
+        $this->renderingContainers->attach( $container );
+
+        try {
+            return $this->renderContainerItems( $container );
+        } finally {
+            $this->renderingContainers->detach( $container );
+        }
+    }
+
+    private function renderContainerItems( Container $container ): string {
         $result = '';
 
         foreach ( $container as $item ) {
-            if ( ! is_array( $item ) || ! array_key_exists( self::DATA_SCHEMA_KEY, $item ) ) {
-                throw new InvalidTemplateDataException( 'A container item must use the Anatomy element schema.' );
-            }
-
-            if (
-                array_key_exists( self::BLOCK_NAME_SCHEMA_KEY, $item )
-                && ! is_string( $item[ self::BLOCK_NAME_SCHEMA_KEY ] )
-            ) {
-                throw new InvalidTemplateDataException( 'A container block name must be a string.' );
-            }
-
-            $block = $item[ self::BLOCK_NAME_SCHEMA_KEY ] ?? '';
-            $data = $item[ self::DATA_SCHEMA_KEY ];
-
-            if ( '' !== $block ) {
-                if ( ! is_array( $data ) ) {
-                    throw new InvalidTemplateDataException(
-                        sprintf( 'Data for block "%s" must be an array.', $block )
-                    );
-                }
-
-                $result .= $this->renderBlock( $block, $data );
-                continue;
-            }
-
-            $result .= $this->stringifyValue( $data, self::DATA_SCHEMA_KEY );
+            $result .= $this->renderContainerItem( $item );
         }
 
         return $result;
+    }
+
+    private function renderContainerItem( mixed $item ): string {
+        $item = $this->validateContainerItem( $item );
+        $block = $item[ self::BLOCK_NAME_SCHEMA_KEY ] ?? '';
+        $data = $item[ self::DATA_SCHEMA_KEY ];
+
+        if ( '' === $block ) {
+            return $this->stringifyValue( $data, self::DATA_SCHEMA_KEY );
+        }
+
+        if ( ! is_array( $data ) ) {
+            throw new InvalidTemplateDataException(
+                sprintf( 'Data for block "%s" must be an array.', $block )
+            );
+        }
+
+        return $this->renderBlock( $block, $data );
+    }
+
+    /**
+     * @return array{block?: string, data: mixed}
+     */
+    private function validateContainerItem( mixed $item ): array {
+        if ( ! is_array( $item ) || ! array_key_exists( self::DATA_SCHEMA_KEY, $item ) ) {
+            throw new InvalidTemplateDataException( 'A container item must use the Anatomy element schema.' );
+        }
+
+        if (
+            array_key_exists( self::BLOCK_NAME_SCHEMA_KEY, $item )
+            && ! is_string( $item[ self::BLOCK_NAME_SCHEMA_KEY ] )
+        ) {
+            throw new InvalidTemplateDataException( 'A container block name must be a string.' );
+        }
+
+        return $item;
     }
 
     /**
@@ -136,26 +164,7 @@ REGEX;
     private function processTags( string $template, array $data ): string {
         return (string) preg_replace_callback(
             self::TAG_REGEX,
-            function ( array $matches ) use ( $data ): string {
-                if ( ! empty( $matches['predefined_tag'] ) ) {
-                    return $this->resolvePredefinedTag( $matches, $data );
-                }
-
-                $tag = $matches['tag'] ?? '';
-                $value = array_key_exists( $tag, $data ) ? $data[ $tag ] : null;
-                $rendered = $this->stringifyValue( $value, $tag );
-
-                if ( ! empty( $matches['escape'] ) ) {
-                    return htmlspecialchars(
-                        $rendered,
-                        ENT_QUOTES | ENT_SUBSTITUTE,
-                        'UTF-8',
-                        false
-                    );
-                }
-
-                return $rendered;
-            },
+            fn( array $matches ): string => $this->renderTagMatch( $matches, $data ),
             $template
         );
     }
@@ -164,8 +173,33 @@ REGEX;
      * @param array<int|string, string> $matches
      * @param array<string, mixed>       $data
      */
+    private function renderTagMatch( array $matches, array $data ): string {
+        if ( isset( $matches['predefined_tag'] ) && '' !== $matches['predefined_tag'] ) {
+            return $this->resolvePredefinedTag( $matches, $data );
+        }
+
+        $tag = $matches['tag'] ?? '';
+        $value = array_key_exists( $tag, $data ) ? $data[ $tag ] : null;
+        $rendered = $this->stringifyValue( $value, $tag );
+
+        if ( empty( $matches['escape'] ) ) {
+            return $rendered;
+        }
+
+        return htmlspecialchars(
+            $rendered,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            'UTF-8',
+            false
+        );
+    }
+
+    /**
+     * @param array<int|string, string> $matches
+     * @param array<string, mixed>       $data
+     */
     private function resolvePredefinedTag( array $matches, array $data ): string {
-        $delimiter = ! empty( $matches['delimiter'] )
+        $delimiter = isset( $matches['delimiter'] ) && '' !== $matches['delimiter']
             ? $matches['delimiter']
             : self::PREDEFINED_DELIMITER;
         $values = explode( $delimiter, $matches['predefined_values'] );
@@ -181,19 +215,7 @@ REGEX;
         }
 
         if ( is_array( $value ) ) {
-            $result = '';
-
-            foreach ( $value as $item ) {
-                if ( is_array( $item ) ) {
-                    throw new InvalidTemplateDataException(
-                        sprintf( 'Nested arrays are not supported for tag "%s".', $tag )
-                    );
-                }
-
-                $result .= $this->stringifyValue( $item, $tag );
-            }
-
-            return $result;
+            return $this->stringifyArray( $value, $tag );
         }
 
         if ( is_scalar( $value ) || $value instanceof Stringable ) {
@@ -203,6 +225,25 @@ REGEX;
         throw new InvalidTemplateDataException(
             sprintf( 'Value of type "%s" is not supported for tag "%s".', get_debug_type( $value ), $tag )
         );
+    }
+
+    /**
+     * @param array<array-key, mixed> $value
+     */
+    private function stringifyArray( array $value, string $tag ): string {
+        $result = '';
+
+        foreach ( $value as $item ) {
+            if ( is_array( $item ) ) {
+                throw new InvalidTemplateDataException(
+                    sprintf( 'Nested arrays are not supported for tag "%s".', $tag )
+                );
+            }
+
+            $result .= $this->stringifyValue( $item, $tag );
+        }
+
+        return $result;
     }
 
     public function getRendered(): string {

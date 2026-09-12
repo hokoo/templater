@@ -40,68 +40,99 @@ final class BlockParser {
             $name = $tokenData['name'];
             $frameIndex = count( $frames ) - 1;
 
-            if ( 1 !== preg_match( self::BLOCK_NAME_REGEX, $name ) ) {
-                throw new TemplateSyntaxException(
-                    sprintf( 'Invalid block name "%s" at offset %d.', $name, $offset )
-                );
-            }
+            $this->assertValidBlockName( $name, $offset );
 
             $frames[ $frameIndex ]['content'] .= substr( $template, $cursor, $offset - $cursor );
             $cursor = $offset + strlen( $token );
 
             if ( '#' === $type ) {
-                if ( isset( $defined[ $name ] ) ) {
-                    throw new TemplateSyntaxException(
-                        sprintf( 'Block "%s" is defined more than once at offset %d.', $name, $offset )
-                    );
-                }
-
-                $defined[ $name ] = true;
-                $frames[] = [
-                    'name'    => $name,
-                    'content' => '',
-                    'offset'  => $offset,
-                ];
+                $this->openBlock( $frames, $defined, $name, $offset );
                 continue;
             }
 
-            if ( 1 === count( $frames ) ) {
-                throw new TemplateSyntaxException(
-                    sprintf( 'Unexpected closing marker for block "%s" at offset %d.', $name, $offset )
-                );
-            }
-
-            $openFrame = $frames[ count( $frames ) - 1 ];
-            if ( $openFrame['name'] !== $name ) {
-                throw new TemplateSyntaxException(
-                    sprintf(
-                        'Closing marker for block "%s" at offset %d does not match open block "%s" at offset %d.',
-                        $name,
-                        $offset,
-                        $openFrame['name'],
-                        $openFrame['offset']
-                    )
-                );
-            }
-
-            array_pop( $frames );
-            $blocks[ $name ] = $openFrame['content'];
+            $this->closeBlock( $frames, $blocks, $name, $offset );
         }
 
         $frameIndex = count( $frames ) - 1;
         $frames[ $frameIndex ]['content'] .= substr( $template, $cursor );
 
-        if ( 1 !== count( $frames ) ) {
-            $openFrame = $frames[ count( $frames ) - 1 ];
-            throw new TemplateSyntaxException(
-                sprintf( 'Block "%s" opened at offset %d is not closed.', $openFrame['name'], $openFrame['offset'] )
-            );
-        }
+        $this->assertAllBlocksClosed( $frames );
 
         return [
             'template' => $frames[0]['content'],
             'blocks'   => $blocks,
         ];
+    }
+
+    private function assertValidBlockName( string $name, int $offset ): void {
+        if ( 1 === preg_match( self::BLOCK_NAME_REGEX, $name ) ) {
+            return;
+        }
+
+        throw new TemplateSyntaxException(
+            sprintf( 'Invalid block name "%s" at offset %d.', $name, $offset )
+        );
+    }
+
+    /**
+     * @param list<array{name: string|null, content: string, offset: int}> $frames
+     * @param array<string, true>                                          $defined
+     */
+    private function openBlock( array &$frames, array &$defined, string $name, int $offset ): void {
+        if ( isset( $defined[ $name ] ) ) {
+            throw new TemplateSyntaxException(
+                sprintf( 'Block "%s" is defined more than once at offset %d.', $name, $offset )
+            );
+        }
+
+        $defined[ $name ] = true;
+        $frames[] = [
+            'name'    => $name,
+            'content' => '',
+            'offset'  => $offset,
+        ];
+    }
+
+    /**
+     * @param list<array{name: string|null, content: string, offset: int}> $frames
+     * @param array<string, string>                                        $blocks
+     */
+    private function closeBlock( array &$frames, array &$blocks, string $name, int $offset ): void {
+        if ( 1 === count( $frames ) ) {
+            throw new TemplateSyntaxException(
+                sprintf( 'Unexpected closing marker for block "%s" at offset %d.', $name, $offset )
+            );
+        }
+
+        $openFrame = $frames[ count( $frames ) - 1 ];
+        if ( $openFrame['name'] !== $name ) {
+            throw new TemplateSyntaxException(
+                sprintf(
+                    'Closing marker for block "%s" at offset %d does not match open block "%s" at offset %d.',
+                    $name,
+                    $offset,
+                    $openFrame['name'],
+                    $openFrame['offset']
+                )
+            );
+        }
+
+        array_pop( $frames );
+        $blocks[ $name ] = $openFrame['content'];
+    }
+
+    /**
+     * @param list<array{name: string|null, content: string, offset: int}> $frames
+     */
+    private function assertAllBlocksClosed( array $frames ): void {
+        if ( 1 === count( $frames ) ) {
+            return;
+        }
+
+        $openFrame = $frames[ count( $frames ) - 1 ];
+        throw new TemplateSyntaxException(
+            sprintf( 'Block "%s" opened at offset %d is not closed.', $openFrame['name'], $openFrame['offset'] )
+        );
     }
 
     /**
