@@ -1,6 +1,7 @@
 <?php
 
 use iTRON\Anatomy\Container;
+use iTRON\Anatomy\Core;
 use iTRON\Anatomy\Exception\InvalidTemplateDataException;
 use iTRON\Anatomy\Exception\UnknownBlockException;
 use iTRON\Anatomy\Templater;
@@ -154,6 +155,29 @@ class CoreContractTest extends TestCase {
 		);
 
 		$this->assertSame( 'third', $result );
+	}
+
+	public function testRegularEscapedAndPredefinedTagsCanBeInterleaved(): void {
+		$result = ( new Templater() )->render(
+			'{{raw}}|{{escaped|e}}|{{#variant=[first|second]}}|{{raw}}',
+			[ 'raw' => '<b>raw</b>', 'escaped' => '<i>safe</i>', 'variant' => 1 ]
+		);
+
+		$this->assertSame(
+			'<b>raw</b>|&lt;i&gt;safe&lt;/i&gt;|second|<b>raw</b>',
+			$result
+		);
+	}
+
+	public function testPrepareTemplateCanInitializeAnUnparsedCore(): void {
+		$core = new Core( 'Before [[#card]]content[[/card]] after', [ 'unused' => true ] );
+
+		$this->assertSame( $core, $core->prepareTemplate() );
+		$this->assertSame( 'content', $core->render( 'card' ) );
+	}
+
+	public function testGetRenderedIsEmptyBeforeTheFirstRender(): void {
+		$this->assertSame( '', ( new Core( 'template' ) )->getRendered() );
 	}
 
 	public function testRenderingAnUnknownBlockThrowsAnExplicitException(): void {

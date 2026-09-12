@@ -161,4 +161,32 @@ class ParserTest extends TestCase {
 			'unterminated marker' => [ 'Before [[#card' ],
 		];
 	}
+
+	/**
+	 * @dataProvider invalidMarkerSequenceProvider
+	 */
+	public function testInvalidMarkerSequencesAfterOtherTokensThrowASyntaxException( string $template ): void {
+		$this->expectException( TemplateSyntaxException::class );
+
+		( new Templater() )->render( $template, [ 'unused' => true ] );
+	}
+
+	public static function invalidMarkerSequenceProvider(): array {
+		return [
+			'invalid close name after open' => [ '[[#card]]content[[/bad name]]' ],
+			'invalid open after valid block' => [ '[[#card]]ok[[/card]][[#bad name]]' ],
+			'unterminated after valid block' => [ '[[#card]]ok[[/card]][[/other' ],
+			'unexpected close after valid block' => [ '[[#card]]ok[[/card]][[/other]]' ],
+			'duplicate after another definition' => [
+				'[[#card]]one[[/card]][[#other]]two[[/other]][[#card]]three[[/card]]',
+			],
+			'nested inner block left unclosed' => [ '[[#outer]][[#inner]]content' ],
+			'outer block left unclosed after inner closes' => [
+				'[[#outer]][[#inner]]content[[/inner]]',
+			],
+			'mismatch after a nested definition' => [
+				'[[#outer]][[#inner]]content[[/inner]][[/other]]',
+			],
+		];
+	}
 }
