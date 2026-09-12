@@ -1,15 +1,15 @@
 <?php
-/**
- * iTRON Templater.
- *
- * This class is to provide a back compat for the old templating system (up to v3.x);
- * is not used in the new version;
- * does not support the new templating system;
- * is not maintained and will be removed in the future.
- */
 
 namespace iTRON\Templater;
 
+/**
+ * Backward compatibility for the old templating system (up to version 3.x).
+ *
+ * This class does not support the new template language and is planned for
+ * removal in version 5.
+ *
+ * @deprecated since 4.2.0 Use \iTRON\Anatomy\Templater instead.
+ */
 class Templater {
 
 	private string $regex = '/\[\[(?P<tag>.+)\]\](?P<content>.+)\[\[\/(?P=tag)\]\]/mUs';
@@ -110,14 +110,15 @@ class Templater {
 			$calculated = $values[ (int) $m['index'][ $i ] ] ?? $values[0];
 
 			// Replace the preselected value with the calculated one. Replace the first occurrence only.
-			$result = preg_replace( '/' . preg_quote( $found, '/' ) . '/', $calculated, $result, 1 );
+			$result = preg_replace_callback(
+				'/' . preg_quote( $found, '/' ) . '/',
+				static fn() => $calculated,
+				$result,
+				1
+			);
 		}
 
 		return $result;
-	}
-
-	private static function format_esc( $format ) {
-		return str_replace( '%', '%%', $format );
 	}
 
 	/**
@@ -173,8 +174,16 @@ class Templater {
 		$result = '';
 
 		foreach ( $data as $row ) {
-			$content = $row['content'] ?? @$row['data'];
-			if ( isset( $row['tag'] ) && ! empty( $content ) ) {
+			$content = $row['content'] ?? $row['data'] ?? null;
+			$tag     = $row['tag'] ?? null;
+
+			if ( isset( $row['tag'] ) && ! array_key_exists( $tag, $context['result']['clear'] ) ) {
+				throw new \InvalidArgumentException( sprintf( 'Unknown legacy repeater "%s".', $tag ) );
+			}
+
+			$has_content = ! empty( $content ) || 0 === $content || '0' === $content;
+
+			if ( isset( $row['tag'] ) && $has_content ) {
 				if ( is_array( $content ) ) {
 					foreach ( $content as $i => $maybe_subarray ) {
 						if ( is_array( $maybe_subarray ) ) {
@@ -187,7 +196,7 @@ class Templater {
 					$context['result']['clear'][ $row['tag'] ],
 					$content
 				);
-			} elseif ( ! empty( $content ) ) {
+			} elseif ( $has_content ) {
 				$result .= ( is_array( $content ) ? implode( '', $content ) : $content );
 			} elseif ( ! empty( $row['tag'] ) ) {
 				$result .= $context['result']['clear'][ $row['tag'] ];
