@@ -46,7 +46,7 @@ jobs:
         with:
           php-version: '8.3'
           coverage: xdebug
-          extensions: dom, mbstring, xml, xmlwriter
+          extensions: dom, mbstring, xml, xmlwriter, xdebug-3.4.7
           tools: composer:v2
 
       - name: Validate Composer metadata
