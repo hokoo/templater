@@ -1,7 +1,9 @@
 # Anatomy: a templater for PHP
 
-[![Latest Stable Version](https://poser.pugx.org/hokoo/templater/v)](//packagist.org/packages/hokoo/templater) 
-[![PHPUnit Tests](https://github.com/hokoo/templater/actions/workflows/phpunit.yml/badge.svg)](https://github.com/hokoo/templater/actions/workflows/phpunit.yml)
+[![Latest stable version](https://img.shields.io/packagist/v/hokoo/templater?label=stable)](https://packagist.org/packages/hokoo/templater)
+[![CI quality gates](https://github.com/hokoo/templater/actions/workflows/phpunit.yml/badge.svg?branch=master)](https://github.com/hokoo/templater/actions/workflows/phpunit.yml)
+[![PHP requirement](https://img.shields.io/packagist/dependency-v/hokoo/templater/php)](https://packagist.org/packages/hokoo/templater)
+[![License](https://img.shields.io/packagist/l/hokoo/templater)](LICENSE)
 
 HTML Templater for PHP.
 
@@ -15,6 +17,7 @@ I believe that you'd like to
 
 ## Table of Contents
 
+- [How rendering works](#how-rendering-works)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
@@ -24,7 +27,23 @@ I believe that you'd like to
   - [Detached mode](#a-detached-mode)
 - [Rendering contract and escaping](#rendering-contract-and-escaping)
 - [Back compatibility](#back-compatibility)
+- [Development roadmap](#development-roadmap)
 
+## How rendering works
+
+```mermaid
+flowchart LR
+    A["render(template, data)"] --> B{"Is data empty?"}
+    B -- "yes" --> C["Return the original template unchanged"]
+    B -- "no" --> D["Parse block definitions"]
+    G["renderBlock(template, block, data)"] --> D
+    D --> E["Render tags and containers"]
+    E --> F["Rendered output"]
+```
+
+Inserted data is opaque and is never parsed as template source. The empty-data
+bypass and the different detached-block behavior are part of the public
+contract, not optimizations.
 
 ## Requirements
 PHP 8.0 and later.
@@ -290,3 +309,10 @@ $templater = new \iTRON\Templater\Templater();
 // Instead of
 // $templater = new \iTRON\Anatomy\Templater();
 ```
+
+## Development roadmap
+
+Version 4.2 is the current stable contract baseline. The next maintenance and
+major-version work, its dependencies, and the required decision gates are
+tracked in the [development roadmap](docs/roadmap.md). Release history is kept
+in the [changelog](CHANGELOG.md).
