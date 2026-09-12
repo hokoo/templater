@@ -8,7 +8,8 @@
   and unknown detached blocks.
 - Opt-in HTML escaping with `{{tag|e}}`.
 - Contract documentation and regression coverage for edge cases.
-- PHP 8.5 CI coverage, static analysis, dependency audit, and coverage gates.
+- PHP 8.0–8.5 CI test matrix, static analysis, dependency audit, and coverage
+  gates.
 
 ### Changed
 
