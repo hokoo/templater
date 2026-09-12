@@ -89,7 +89,16 @@ if ($pathCoverage < MINIMUM_PATH_COVERAGE) {
 }
 
 if ($failures !== []) {
-	reportError(implode("\n", $failures));
+	$classMatches = [];
+	preg_match_all(
+		'/^iTRON\\\\Anatomy\\\\[^\r\n]+\R\s+Methods:.*$/m',
+		$coverage,
+		$classMatches
+	);
+	$details = $classMatches[0] === []
+		? ''
+		: "\n\nPer-class coverage:\n" . implode("\n", $classMatches[0]);
+	reportError(implode("\n", $failures) . $details);
 	exit(1);
 }
 
