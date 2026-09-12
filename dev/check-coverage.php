@@ -6,17 +6,32 @@ declare(strict_types=1);
 const MINIMUM_LINE_COVERAGE = 95.0;
 const MINIMUM_PATH_COVERAGE = 75.0;
 
+function reportError(string $message): void {
+	fwrite(STDERR, $message . "\n");
+
+	if (getenv('GITHUB_ACTIONS') !== 'true') {
+		return;
+	}
+
+	$annotation = str_replace(
+		['%', "\r", "\n"],
+		['%25', '%0D', '%0A'],
+		$message
+	);
+	fwrite(STDOUT, "::error title=Coverage gate::{$annotation}\n");
+}
+
 $projectRoot = dirname(__DIR__);
 $phpunit = $projectRoot . '/vendor/phpunit/phpunit/phpunit';
 
 if (!is_file($phpunit)) {
-	fwrite(STDERR, "PHPUnit is not installed. Run composer install first.\n");
+	reportError('PHPUnit is not installed. Run composer install first.');
 	exit(2);
 }
 
 $report = tempnam(sys_get_temp_dir(), 'templater-coverage-');
 if ($report === false) {
-	fwrite(STDERR, "Could not create a temporary coverage report.\n");
+	reportError('Could not create a temporary coverage report.');
 	exit(2);
 }
 
@@ -39,7 +54,7 @@ $coverage = file_get_contents($report);
 @unlink($report);
 
 if ($coverage === false) {
-	fwrite(STDERR, "Could not read the PHPUnit coverage report.\n");
+	reportError('Could not read the PHPUnit coverage report.');
 	exit(2);
 }
 
@@ -49,7 +64,7 @@ if (
 	preg_match('/^\s*Lines:\s+([0-9]+(?:\.[0-9]+)?)%/m', $coverage, $lineMatch) !== 1
 	|| preg_match('/^\s*Paths:\s+([0-9]+(?:\.[0-9]+)?)%/m', $coverage, $pathMatch) !== 1
 ) {
-	fwrite(STDERR, "Could not find line and path coverage totals in the PHPUnit report.\n");
+	reportError('Could not find line and path coverage totals in the PHPUnit report.');
 	exit(2);
 }
 
@@ -74,7 +89,7 @@ if ($pathCoverage < MINIMUM_PATH_COVERAGE) {
 }
 
 if ($failures !== []) {
-	fwrite(STDERR, implode("\n", $failures) . "\n");
+	reportError(implode("\n", $failures));
 	exit(1);
 }
 
